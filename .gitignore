@@ -1,0 +1,23 @@
+# Dependencias y binarios generados
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+
+# Archivos temporales
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+*.log
+
+# Resultados generados por las pruebas (los tests .py se conservan)
+pruebas/**/*.png
+pruebas/**/*.jpg
+pruebas/**/*.jpeg
+pruebas/**/*.webp
+pruebas/**/*.pdf
+pruebas/**/*.docx
+pruebas/export_180/
+pruebas/190-resultado/
+pruebas/MARGEN_*.png

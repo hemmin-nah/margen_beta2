@@ -1,0 +1,45 @@
+# MARGEN 1.13.2 Beta — Proyecto Windows / Tauri (limpieza de fuentes)
+
+**Proyecto funcional a partir de la 1.13.2 con corrección de HTTP 503.** No incluye instalador `.exe`.
+
+## Qué se ha limpiado
+
+- Las capturas de pantalla y los documentos de resultados de pruebas, generados en versiones anteriores.
+- `cambios/`, parches antiguos que ya se integraron en el frontend activo.
+- `dist/`, que era una copia idéntica del frontend; **se regenera automáticamente antes de compilar**.
+- Las notas y guías de versiones anteriores. El historial queda disponible en un ZIP separado.
+
+**Importante:** los archivos `frontend/assets/margen-110.js`, `margen-121.js`, `margen-170.js`, etc. **no son restos inactivos**: el frontend los carga y por eso deben permanecer. Tampoco se han quitado las pruebas Python, los archivos de licencias, ni el workflow de GitHub.
+
+## Revisión interna del código
+
+Se ha aplicado una **primera limpieza conservadora del código** sobre la versión 1.13.2, centrada en una duplicación de la pizarra y en automatizar la detección y validación de scripts/estilos. No es una reescritura del editor ni de SQLite. Lee `INFORME_REFACTORIZACION_CODIGO_1132.md` para los detalles, pruebas realizadas y límites.
+
+## Cómo compilar (GitHub Actions)
+
+1. Exporta una copia **JSON completa** de tus libros desde la versión que ya funciona y guárdala fuera de MARGEN.
+2. Extrae el ZIP y sube **el contenido interior de la carpeta** a GitHub, incluidas `.github`, `frontend`, `src-tauri`, `pruebas`, `herramientas_frontend.py`, `herramientas_lexicas.py` y `package.json`.
+3. **Muy importante:** si reutilizas un repositorio con archivos antiguos, al subir nuevos ficheros GitHub NO borra los anteriores. Elimina del repositorio los archivos obsoletos antes de dar la limpieza por terminada. Consulta `INFORME_LIMPIEZA_1132.md`.
+4. En GitHub, abre **Actions → Compilar MARGEN para Windows → Run workflow**. No pulses "Re-run" de una ejecución antigua, porque usa el commit original.
+5. Si todo acaba en verde, descarga **MARGEN-1.13.2-Windows-x64** y utiliza el instalador `.exe` dentro del artefacto.
+
+El workflow reconstruye `dist/` antes de ejecutar las pruebas Rust. También se ha configurado `beforeBuildCommand` para que un build Tauri directo lo regenere.
+
+## Comprobación local
+
+```bash
+python herramientas_frontend.py
+npm run check:frontend
+npm run verify:frontend
+python pruebas/test_1132_frontend_maintenance.py
+python herramientas_lexicas.py --test
+python pruebas/test_1132_lexicon_download.py
+python pruebas/test_1121_release_static.py
+python pruebas/test_1131_single_book_export.py
+python pruebas/test_1132_release_static.py
+python pruebas/test_1132_board_groups.py
+```
+
+El paso `python herramientas_lexicas.py --build` requiere acceso a las fuentes oficiales de los diccionarios y la verificación de licencias sigue activa.
+
+Esta limpieza **no cambia la versión de la app (1.13.2), el identificador `com.margen.escritorio`, el modelo SQLite ni los documentos de los usuarios**. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.
