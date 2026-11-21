@@ -36,6 +36,16 @@ with sync_playwright() as pw:
  assert page.locator('#board-viewport').count()==1
  assert page.evaluate("document.querySelector('.brand .m11-version')?.textContent")=='1.13.2 · Beta'
  assert page.evaluate('activeBoard().elements.length')==2
+ # Sesión de puntero única: ignora otro pointerId y limpia al cancelar.
+ pointer_case=page.evaluate("""()=>{
+  const events=[];const start={pointerId:71};
+  m1132TrackPointer(start,{move:()=>events.push('move'),end:()=>events.push('end'),cancel:()=>events.push('cancel')});
+  const fire=(type,id)=>window.dispatchEvent(new PointerEvent(type,{pointerId:id,bubbles:true}));
+  fire('pointermove',72);fire('pointerup',72);fire('pointermove',71);
+  fire('pointercancel',71);fire('pointermove',71);fire('pointerup',71);
+  return events;
+ }""")
+ assert pointer_case==['move','cancel'],pointer_case
  def snapshot():return page.evaluate("()=>({elements:activeBoard().elements.map(x=>({id:x.id,x:x.x,y:x.y,groupId:x.groupId||null})),strokes:activeBoard().strokes.map(s=>({id:s.id,p:s.points.map(p=>[p.x,p.y]),groupId:s.groupId||null}))})")
  def place(sel,x_frac=.5,y_frac=.5):
   r=page.locator(sel).bounding_box();assert r,(sel,'missing bounding')

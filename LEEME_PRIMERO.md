@@ -11,9 +11,19 @@
 
 **Importante:** los archivos `frontend/assets/margen-110.js`, `margen-121.js`, `margen-170.js`, etc. **no son restos inactivos**: el frontend los carga y por eso deben permanecer. Tampoco se han quitado las pruebas Python, los archivos de licencias, ni el workflow de GitHub.
 
+## Segunda fase: refactorización del módulo de pizarra
+
+La selección por grupos, geometría del rectángulo de selección, cálculo de límites al mover y clonación de grupos se han extraído a **`frontend/assets/margen-board-model.js`**, un módulo sin acceso al DOM, Rust o SQLite. El controlador `margen-1132.js` sigue gestionando punteros, elementos visuales e historial; no cambia el esquema de datos.
+
+El HTML debe cargar `margen-board-model.js` **antes** de `margen-1132.js`. El workflow de GitHub lo comprueba con pruebas Node, y `herramientas_frontend.py` valida los 17 scripts activos. Consulta `INFORME_PIZARRA_REFACTORIZACION_1132.md`.
+
 ## Revisión interna del código
 
 Se ha aplicado una **primera limpieza conservadora del código** sobre la versión 1.13.2, centrada en una duplicación de la pizarra y en automatizar la detección y validación de scripts/estilos. No es una reescritura del editor ni de SQLite. Lee `INFORME_REFACTORIZACION_CODIGO_1132.md` para los detalles, pruebas realizadas y límites.
+
+## Consolidación de controladores de pizarra (mantenimiento adicional)
+
+Se han retirado las versiones sobrescritas de selección rectangular, controles sobre trazos y pegado; las sesiones de puntero de la pizarra comparten ahora un único ciclo de registro y limpieza. No se alteran las herramientas ni el formato de guardado. Consulta `INFORME_CONSOLIDACION_PIZARRA_1132.md` y ejecuta `python pruebas/test_1132_board_controller_consolidation.py` antes de compilar.
 
 ## Cómo compilar (GitHub Actions)
 
@@ -37,6 +47,7 @@ python pruebas/test_1132_lexicon_download.py
 python pruebas/test_1121_release_static.py
 python pruebas/test_1131_single_book_export.py
 python pruebas/test_1132_release_static.py
+node pruebas/test_1132_board_model.cjs
 python pruebas/test_1132_board_groups.py
 ```
 

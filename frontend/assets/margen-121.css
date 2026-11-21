@@ -27,13 +27,12 @@
 .m1211-character-ref>div{padding:0 7px 7px}.m1211-ref-detail{width:100%;display:flex;align-items:center;gap:8px;border:0;background:transparent;border-radius:7px;padding:6px 8px;text-align:left}.m1211-ref-detail:hover{background:var(--surface)}.m1211-ref-detail span{font-size:10px;font-weight:800;color:var(--accent-strong);min-width:52px}.m1211-ref-detail small{font-size:10px;color:var(--muted)}
 
 /* Marco de selección, 4 esquinas y bloqueo discreto. */
-.m1211-marquee{position:absolute;border:1px solid var(--accent-strong);background:color-mix(in srgb,var(--accent) 13%,transparent);z-index:15;pointer-events:none}
 .board-item .m1211-resize{display:none;position:absolute;width:12px;height:12px;border:2px solid var(--surface);background:var(--accent-strong);border-radius:3px;z-index:12}
 .board-item.selected .m1211-resize,.board-item.group-selected .m1211-resize{display:block}.m1211-resize.nw{left:-6px;top:-6px;cursor:nwse-resize}.m1211-resize.ne{right:-6px;top:-6px;cursor:nesw-resize}.m1211-resize.sw{left:-6px;bottom:-6px;cursor:nesw-resize}.m1211-resize.se{right:-6px;bottom:-6px;cursor:nwse-resize}
 .board-item.m12-locked:not(:hover):not(.selected) .item-popmenu{opacity:0}.board-item.m12-locked:hover .item-popmenu,.board-item.m12-locked.selected .item-popmenu{opacity:1}
 
 /* Sellos estampados: capa invisible salvo selección. */
-.m162-vector-strokes{pointer-events:none;position:absolute;inset:0;z-index:3}.m1211-stamp-hit{fill:transparent;stroke:transparent;stroke-width:2;pointer-events:all;cursor:move}.m1211-stamp-hit:hover{stroke:color-mix(in srgb,var(--accent-strong) 45%,transparent);stroke-dasharray:5 4}.m1211-stamp-hit.selected{stroke:var(--accent-strong);stroke-dasharray:5 4}
+.m162-vector-strokes{pointer-events:none;position:absolute;inset:0;z-index:3}
 
 /* Relaciones también muestran retrato. */
 .m122-relation-node .m1211-relation-avatar{width:38px;height:38px;float:left;margin:4px 8px 4px 0;border-radius:50%;overflow:hidden;background:var(--surface2)}

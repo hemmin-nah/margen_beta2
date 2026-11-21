@@ -33,8 +33,10 @@ assert 'min-height:max(690px,calc(100vh - 190px))' in editor_css
 assert 'min-width:790px!important' in editor_css
 
 # Pizarra.
-for token in ['boardType','m1211BindBoardSelection','m1211-marquee','m1211-resize','m1211-eyedropper','m1211StampOnboarding','stampInstanceId']:
+for token in ['boardType','m1211BindBoardSelection','m1211-resize','m1211-eyedropper','m1211StampOnboarding','stampInstanceId']:
     assert token in js, token
+# La marquesina de la 1.12.1 se sustituyó por el controlador real de 1.13.2.
+assert 'm1132-marquee' in read('frontend/assets/margen-1132.js')
 assert '.board-item.m12-locked:after' in css and 'display:none!important' in css
 
 # Fichas / referencias.

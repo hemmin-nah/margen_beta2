@@ -9,18 +9,9 @@ const m1132Strokes=()=>activeBoard()?.strokes||[];
 function m1132Selected(){
  return {elements:new Set(boardSelectedIds?.size?[...boardSelectedIds]:(selectedElement?[selectedElement]:[])),strokes:new Set(m113SelectedStrokeIds)};
 }
+// Reglas de pertenencia y selección en el modelo puro de pizarra.
 function m1132Expand(elementIds,strokeIds){
- const es=new Set(elementIds),ss=new Set(strokeIds),elements=m1132Elements(),strokes=m1132Strokes();
- // La selección de un elemento de un grupo incluye el resto, también al mezclar tipos.
- let changedSet=true;
- while(changedSet){
-  changedSet=false;
-  const gids=new Set([...elements.filter(x=>es.has(x.id)),...strokes.filter(x=>ss.has(x.id))].map(x=>x.groupId).filter(Boolean));
-  const stamps=new Set(strokes.filter(s=>ss.has(s.id)).map(s=>s.stampInstanceId).filter(Boolean));
-  for(const x of elements){if(x.groupId&&gids.has(x.groupId)&&!es.has(x.id)){es.add(x.id);changedSet=true}}
-  for(const s of strokes){if(((s.groupId&&gids.has(s.groupId))||(s.stampInstanceId&&stamps.has(s.stampInstanceId)))&&!ss.has(s.id)){ss.add(s.id);changedSet=true}}
- }
- return {elements:es,strokes:ss};
+ return MARGEN_BOARD_MODEL.expandSelection(m1132Elements(),m1132Strokes(),elementIds,strokeIds);
 }
 function m1132Select(elementIds,strokeIds){
  boardSelectedIds.clear();for(const id of elementIds)boardSelectedIds.add(id);
@@ -35,16 +26,9 @@ function m1132Select(elementIds,strokeIds){
  updateBoardSelectionButtons();m113DrawStrokes();
 }
 function m1132ClearSelection(){m1132Select(new Set(),new Set());try{m1211SelectedStamp=null}catch(_e){}}
-function m1132AllSelected(members,current){
- return [...members.elements].every(id=>current.elements.has(id))
-  &&[...members.strokes].every(id=>current.strokes.has(id));
-}
 function m1132ToggleSelection(members,additive){
- const current=additive?m1132Selected():{elements:new Set(),strokes:new Set()};
- const all=m1132AllSelected(members,current);
- if(additive&&all){for(const id of members.elements)current.elements.delete(id);for(const id of members.strokes)current.strokes.delete(id)}
- else{for(const id of members.elements)current.elements.add(id);for(const id of members.strokes)current.strokes.add(id)}
- m1132Select(current.elements,current.strokes);
+ const next=MARGEN_BOARD_MODEL.toggleSelection(members,m1132Selected(),additive);
+ m1132Select(next.elements,next.strokes);
 }
 // La función de 1.13.0 descarta las trazas seleccionadas al pulsar una nota.
 // Se conserva ese comportamiento para objetos sueltos; en un grupo mixto,
@@ -63,9 +47,28 @@ updateBoardSelectionButtons=function(){
  const chosen=m1132Selected(),count=chosen.elements.size+chosen.strokes.size;
  const group=document.getElementById('board-group'),ungroup=document.getElementById('board-ungroup');
  if(group)group.disabled=count<2;
- if(ungroup)ungroup.disabled=![...m1132Elements().filter(x=>chosen.elements.has(x.id)),...m1132Strokes().filter(s=>chosen.strokes.has(s.id))].some(x=>x.groupId);
+ if(ungroup)ungroup.disabled=!MARGEN_BOARD_MODEL.members(m1132Elements(),m1132Strokes(),chosen).some(x=>x.groupId);
  const label=document.getElementById('board-selection-count');if(label)label.textContent=count>1?`${count} ${m1132T('seleccionados','selected')} · `:'';
 };
+
+// Única sesión de puntero para arrastre, marco y resize de la pizarra.
+// Identifica el dedo/ratón correcto y retira SIEMPRE los tres listeners,
+// también en pointercancel: evita sesiones acumuladas al cambiar de herramienta.
+function m1132TrackPointer(start,callbacks){
+ const pointerId=start.pointerId;
+ const stop=()=>{
+  window.removeEventListener('pointermove',onMove,true);
+  window.removeEventListener('pointerup',onEnd,true);
+  window.removeEventListener('pointercancel',onCancel,true);
+ };
+ const onMove=e=>{if(e.pointerId===pointerId)callbacks.move?.(e)};
+ const onEnd=e=>{if(e.pointerId!==pointerId)return;stop();callbacks.end?.(e)};
+ const onCancel=e=>{if(e.pointerId!==pointerId)return;stop();callbacks.cancel?.(e)};
+ window.addEventListener('pointermove',onMove,true);
+ window.addEventListener('pointerup',onEnd,true);
+ window.addEventListener('pointercancel',onCancel,true);
+ return stop;
+}
 
 // Sustituimos el manejador anterior, que consideraba fondo cualquier clic en
 // un SVG de trazo e iniciaba la selección de área ANTES del movimiento.
@@ -85,11 +88,10 @@ m1211BindBoardSelection=function(){
   if(boardTool!=='select'||m113SpaceDown||e.button!==0)return;
   if(e.target.closest('.board-item,[data-m113-stroke],[data-m1211-stamp-hit],.selection-tools,.zoom-controls,.m1132-marquee'))return;
   if(e.target.closest('button,input,textarea,select,[contenteditable="true"]'))return;
-  const origin={x:e.clientX,y:e.clientY},start=m1211BoardCoords(e),pointer=e.pointerId,additive=e.ctrlKey||e.metaKey||e.shiftKey;
+  const origin={x:e.clientX,y:e.clientY},start=m1211BoardCoords(e),additive=e.ctrlKey||e.metaKey||e.shiftKey;
   let frame=null,marquee=false;
   if(!additive)m1132ClearSelection();
   const move=ev=>{
-   if(ev.pointerId!==pointer)return;
    const dx=ev.clientX-origin.x,dy=ev.clientY-origin.y;
    if(!marquee&&Math.hypot(dx,dy)<5)return;
    if(!marquee){marquee=true;frame=document.createElement('div');frame.className='m1132-marquee';vp.append(frame)}
@@ -100,26 +102,15 @@ m1211BindBoardSelection=function(){
    frame.style.height=Math.abs(start.y-now.y)*z+'px';
   };
   const finish=ev=>{
-   if(ev.pointerId!==pointer)return;
-   window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',cancel,true);
    frame?.remove();if(!marquee)return;
    const end=m1211BoardCoords(ev),box={x:Math.min(start.x,end.x),y:Math.min(start.y,end.y),w:Math.abs(start.x-end.x),h:Math.abs(start.y-end.y)};
-   const choice=additive?m1132Selected():{elements:new Set(),strokes:new Set()};
-   for(const item of m1132Elements()){
-    const x=Number(item.x)||0,y=Number(item.y)||0,w=Number(item.w)||0,h=Number(item.h)||0;
-    if(x<box.x+box.w&&x+w>box.x&&y<box.y+box.h&&y+h>box.y)choice.elements.add(item.id);
-   }
-   for(const stroke of m1132Strokes()){
-    const pts=stroke.points||[];if(!pts.length)continue;
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    for(const p of pts){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y)}
-    const pad=(Number(stroke.width)||4)/2;
-    if(minX-pad<box.x+box.w&&maxX+pad>box.x&&minY-pad<box.y+box.h&&maxY+pad>box.y)choice.strokes.add(stroke.id);
-   }
+   const choice=additive?m1132Selected():MARGEN_BOARD_MODEL.emptySelection();
+   const found=MARGEN_BOARD_MODEL.inMarquee(m1132Elements(),m1132Strokes(),box);
+   for(const id of found.elements)choice.elements.add(id);
+   for(const id of found.strokes)choice.strokes.add(id);
    const expanded=m1132Expand(choice.elements,choice.strokes);m1132Select(expanded.elements,expanded.strokes);
   };
-  const cancel=ev=>{if(ev.pointerId!==pointer)return;window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',finish,true);window.removeEventListener('pointercancel',cancel,true);frame?.remove()};
-  window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',finish,true);window.addEventListener('pointercancel',cancel,true);
+  m1132TrackPointer(e,{move,end:finish,cancel:()=>frame?.remove()});
   e.preventDefault();
  },true);
 };
@@ -129,33 +120,33 @@ function m1132MoveSelection(event,elementIds,strokeIds){
  if([...els,...sts].some(x=>x.locked)){showToast(m1132T('Hay un objeto bloqueado en la selección.','There is a locked object in the selection.'));return}
  const originals=els.map(item=>({item,x:Number(item.x)||0,y:Number(item.y)||0}));
  const originalStrokes=sts.map(stroke=>({stroke,points:(stroke.points||[]).map(p=>({...p}))}));
- const pointer=event.pointerId;let started=false;
+ let started=false;
  const move=e=>{
-  if(e.pointerId!==pointer)return;
   const dx=(e.clientX-start.x)/z,dy=(e.clientY-start.y)/z;
   if(!started&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<3)return;
   if(!started){m113PushUndo();started=true}
-  // Clamping común para que un grupo nunca se desmonte cerca de los bordes.
-  let ox=dx,oy=dy;
-  if(originals.length){ox=Math.max(-Math.min(...originals.map(x=>x.x)),Math.min(M113_WORLD_W-Math.max(...originals.map(x=>x.x+(x.item.w||80))),ox));oy=Math.max(-Math.min(...originals.map(x=>x.y)),Math.min(M113_WORLD_H-Math.max(...originals.map(x=>x.y+(x.item.h||60))),oy))}
+  // El cálculo de límites se comparte entre todos los miembros del grupo.
+  const {x:ox,y:oy}=MARGEN_BOARD_MODEL.clampTranslation(originals,dx,dy,M113_WORLD_W,M113_WORLD_H);
   for(const row of originals){row.item.x=row.x+ox;row.item.y=row.y+oy;const node=document.querySelector(`#board-items .board-item[data-eid="${CSS.escape(row.item.id)}"]`);if(node){node.style.left=row.item.x+'px';node.style.top=row.item.y+'px'}}
   for(const row of originalStrokes)row.stroke.points=row.points.map(p=>({x:p.x+ox,y:p.y+oy}));
   if(originalStrokes.length)m113DrawStrokes();
  };
- const done=e=>{if(e.pointerId!==pointer)return;window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',done,true);window.removeEventListener('pointercancel',done,true);if(started){changed();m113Recenter()}};
- window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',done,true);window.addEventListener('pointercancel',done,true);
+ const done=()=>{if(started){changed();m113Recenter()}};
+ m1132TrackPointer(event,{move,end:done,cancel:done});
 }
 
 // Arrastrar una nota/imagen deja de mover sólo el elemento pulsado si forma
 // parte de un grupo; ahora traslada TODAS sus notas, imágenes y trazos.
+const m1132PreviousStartItemDrag=startItemDrag;
 startItemDrag=function(e,item,node,kind){
+ if(!m113IsFreeBoard())return m1132PreviousStartItemDrag(e,item,node,kind);
  if(boardTool!=='select'||item?.locked)return;
  e.preventDefault();e.stopPropagation();m113BlurBoardEditor();
  if(kind!=='move'){
   m113PushUndo();setSelected(item.id);const start={x:e.clientX,y:e.clientY,w:Number(item.w)||100,h:Number(item.h)||80},z=activeBoard()?.zoom||1;
-  const move=ev=>{if(ev.pointerId!==e.pointerId)return;item.w=Math.max(80,Math.min(3200,start.w+(ev.clientX-start.x)/z));item.h=Math.max(60,Math.min(2600,start.h+(ev.clientY-start.y)/z));node.style.width=item.w+'px';node.style.height=item.h+'px'};
-  const done=ev=>{if(ev.pointerId!==e.pointerId)return;window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',done,true);window.removeEventListener('pointercancel',done,true);changed()};
-  window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',done,true);window.addEventListener('pointercancel',done,true);return;
+  const move=ev=>{item.w=Math.max(80,Math.min(3200,start.w+(ev.clientX-start.x)/z));item.h=Math.max(60,Math.min(2600,start.h+(ev.clientY-start.y)/z));node.style.width=item.w+'px';node.style.height=item.h+'px'};
+  const done=()=>changed();
+  m1132TrackPointer(e,{move,end:done,cancel:done});return;
  }
  const current=m1132Selected(),keep=current.elements.has(item.id)&&(current.elements.size+current.strokes.size>1);
  if(!keep)setSelected(item.id);
@@ -170,7 +161,7 @@ m113BindStrokeHits=function(){
   e.preventDefault();e.stopPropagation();m113BlurBoardEditor();
   const id=hit.dataset.m113Stroke,members=m1132Expand(new Set(),new Set([id])),current=m1132Selected(),additive=e.ctrlKey||e.metaKey||e.shiftKey;
   if(additive){m1132ToggleSelection(members,true);return}
-  const all=m1132AllSelected(members,current);
+  const all=MARGEN_BOARD_MODEL.allSelected(members,current);
   if(!all)m1132Select(members.elements,members.strokes);
   const choice=m1132Selected();m1132MoveSelection(e,choice.elements,choice.strokes);
  });
@@ -180,9 +171,9 @@ m113BindStrokeHits=function(){
 // Se guarda sobre cada miembro: compatible con SQLite/JSON existentes sin migración.
 groupBoardItems=function(){
  if(!m113IsFreeBoard())return;
- const b=activeBoard(),current=m1132Selected(),expanded=m1132Expand(current.elements,current.strokes);
+ const current=m1132Selected(),expanded=m1132Expand(current.elements,current.strokes);
  if(expanded.elements.size+expanded.strokes.size<2)return;
- const ids=[...m1132Elements().filter(x=>expanded.elements.has(x.id)),...m1132Strokes().filter(s=>expanded.strokes.has(s.id))];
+ const ids=MARGEN_BOARD_MODEL.members(m1132Elements(),m1132Strokes(),expanded);
  if(ids.every(x=>x.groupId&&x.groupId===ids[0].groupId))return;
  m113PushUndo();const groupId=uid();for(const obj of ids)obj.groupId=groupId;
  m1132Select(expanded.elements,expanded.strokes);changed();m113UpdateHistoryButtons();
@@ -190,7 +181,7 @@ groupBoardItems=function(){
 };
 ungroupBoardItems=function(){
  if(!m113IsFreeBoard())return;
- const b=activeBoard(),current=m1132Selected(),groups=new Set([...m1132Elements().filter(x=>current.elements.has(x.id)),...m1132Strokes().filter(x=>current.strokes.has(x.id))].map(x=>x.groupId).filter(Boolean));
+ const b=activeBoard(),current=m1132Selected(),groups=new Set(MARGEN_BOARD_MODEL.members(m1132Elements(),m1132Strokes(),current).map(x=>x.groupId).filter(Boolean));
  if(!groups.size)return;
  m113PushUndo();for(const obj of [...b.elements,...b.strokes])if(groups.has(obj.groupId))delete obj.groupId;
  m1132Select(current.elements,current.strokes);changed();m113UpdateHistoryButtons();showToast(m1132T('Grupo deshecho.','Group dissolved.'));
@@ -203,11 +194,10 @@ m113DeleteSelection=function(){
 deleteSelected=m113DeleteSelection;
 m113Paste=function(){
  const b=activeBoard();if(!b||!m113Clipboard)return;
- m113PushUndo();const ids=new Set(),strokes=new Set(),groups=new Map(),stamps=new Map();
- for(const source of m113Clipboard.elements||[]){const x=structuredClone(source);x.id=uid();x.x=(Number(x.x)||0)+45;x.y=(Number(x.y)||0)+45;if(x.groupId){if(!groups.has(x.groupId))groups.set(x.groupId,uid());x.groupId=groups.get(x.groupId)}b.elements.push(x);ids.add(x.id)}
- for(const source of m113Clipboard.strokes||[]){const x=structuredClone(source);x.id=uid();x.points=(x.points||[]).map(p=>({x:p.x+45,y:p.y+45}));if(x.groupId){if(!groups.has(x.groupId))groups.set(x.groupId,uid());x.groupId=groups.get(x.groupId)}if(x.stampInstanceId){if(!stamps.has(x.stampInstanceId))stamps.set(x.stampInstanceId,uid());x.stampInstanceId=stamps.get(x.stampInstanceId)}b.strokes.push(x);strokes.add(x.id)}
- // No se modifican las IDs del original ni se enlazan ambos grupos por accidente.
- renderBoardElements();m1132Select(ids,strokes);changed();m113UpdateHistoryButtons();
+ const pasted=MARGEN_BOARD_MODEL.copyForPaste(m113Clipboard,uid);
+ m113PushUndo();b.elements.push(...pasted.elements);b.strokes.push(...pasted.strokes);
+ // Los nuevos grupos y sellos no comparten IDs con los originales.
+ renderBoardElements();m1132Select(pasted.elementIds,pasted.strokeIds);changed();m113UpdateHistoryButtons();
 };
 
 const m1132OldRender=render;

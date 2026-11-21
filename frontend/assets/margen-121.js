@@ -92,28 +92,12 @@ m146RefsHtml=function(p,kind,id){
 };
 
 /* ---------- Pizarra libre ---------- */
-let m1211Marquee=null,m1211SelectedStamp=null;
+let m1211SelectedStamp=null;
 function m1211SyncBoardSelection(){document.querySelectorAll('.board-item').forEach(elm=>elm.classList.toggle('group-selected',boardSelectedIds.has(elm.dataset.eid)));updateBoardSelectionButtons()}
 function m1211BoardCoords(event){const world=document.getElementById('board-world'),b=activeBoard();if(!world||!b)return{x:0,y:0};const r=world.getBoundingClientRect();return{x:(event.clientX-r.left)/b.zoom,y:(event.clientY-r.top)/b.zoom}}
-function m1211BindBoardSelection(){
-  if(state.view!=='boards'||activeBoard()?.boardType!=='free')return;const items=document.getElementById('board-items'),vp=document.getElementById('board-viewport'),world=document.getElementById('board-world');if(!items||!vp||!world)return;
-  items.addEventListener('pointerdown',e=>{
-    const node=e.target.closest('.board-item');if(!node||boardTool!=='select')return;
-    if(e.shiftKey&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();return}
-    if(!(e.ctrlKey||e.metaKey))return;
-    if(e.target.closest('input,textarea,[contenteditable="true"],button,select,.item-popmenu'))return;
-    e.preventDefault();e.stopImmediatePropagation();const id=node.dataset.eid;
-    if(boardSelectedIds.has(id))boardSelectedIds.delete(id);else boardSelectedIds.add(id);selectedElement=id;m1211SyncBoardSelection();
-  },true);
-  vp.addEventListener('pointerdown',e=>{
-    if(boardTool!=='select'||e.button!==0||e.target.closest('.board-item,[data-m1211-stamp-hit],.selection-tools,.zoom-controls'))return;
-    // El marco sólo nace sobre fondo vacío; no compite con mano/lápiz.
-    const start=m1211BoardCoords(e),rect=document.createElement('div');rect.className='m1211-marquee';vp.append(rect);m1211Marquee={start,rect,pointer:e.pointerId};vp.setPointerCapture(e.pointerId);e.preventDefault();
-  },true);
-  vp.addEventListener('pointermove',e=>{if(!m1211Marquee||m1211Marquee.pointer!==e.pointerId)return;const p=m1211BoardCoords(e),x=Math.min(m1211Marquee.start.x,p.x),y=Math.min(m1211Marquee.start.y,p.y),w=Math.abs(p.x-m1211Marquee.start.x),h=Math.abs(p.y-m1211Marquee.start.y),b=activeBoard();m1211Marquee.box={x,y,w,h};m1211Marquee.rect.style.cssText=`left:${x*b.zoom+b.panX}px;top:${y*b.zoom+b.panY}px;width:${w*b.zoom}px;height:${h*b.zoom}px`});
-  const finish=e=>{if(!m1211Marquee||m1211Marquee.pointer!==e.pointerId)return;const box=m1211Marquee.box;m1211Marquee.rect.remove();m1211Marquee=null;if(!box||box.w<3||box.h<3)return;boardSelectedIds.clear();for(const item of activeBoard().elements||[]){const ix=item.x||0,iy=item.y||0,iw=item.w||0,ih=item.h||0;if(ix<box.x+box.w&&ix+iw>box.x&&iy<box.y+box.h&&iy+ih>box.y)boardSelectedIds.add(item.id)}selectedElement=[...boardSelectedIds][0]||null;m1211SyncBoardSelection()};
-  vp.addEventListener('pointerup',finish);vp.addEventListener('pointercancel',finish);
-}
+// Controlador de selección activo en margen-1132.js.
+// Se conserva el punto de enlace para los renders históricos de 1.12.1.
+let m1211BindBoardSelection;
 function m1211AddResizeHandles(){
   if(state.view!=='boards'||activeBoard()?.boardType!=='free')return;
   document.querySelectorAll('#board-items>.board-item').forEach(node=>{const item=activeBoard().elements.find(x=>x.id===node.dataset.eid);if(!item)return;node.querySelectorAll('.resize-grip').forEach(x=>x.remove());
@@ -136,13 +120,8 @@ function m1211EyeDropper(){
   if(state.view!=='boards'||activeBoard()?.boardType!=='free')return;const color=document.getElementById('pen-color'),bar=document.querySelector('.boardbar');if(!color||!bar||bar.querySelector('[data-m1211-eyedropper]'))return;
   const btn=document.createElement('button');btn.type='button';btn.className='tool-btn';btn.dataset.m1211Eyedropper='1';btn.title=m1211T('Cuentagotas','Eyedropper');btn.innerHTML='⌾';color.closest('label')?.after(btn);btn.onclick=async()=>{try{if(window.EyeDropper){const result=await new EyeDropper().open();color.value=result.sRGBHex;penColor=result.sRGBHex;color.dispatchEvent(new Event('input',{bubbles:true}));changed()}else color.click()}catch(_e){/* cancelar no es error */}};
 }
-function m1211StampBounds(group){const strokes=(activeBoard()?.strokes||[]).filter(s=>s.stampInstanceId===group),pts=strokes.flatMap(s=>s.points||[]);if(!pts.length)return null;const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);return{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(10,Math.max(...xs)-Math.min(...xs)),h:Math.max(10,Math.max(...ys)-Math.min(...ys))}}
-const m1211PrevDrawStrokes=drawStrokes;
-drawStrokes=function(){m1211PrevDrawStrokes();const svg=document.getElementById('m162-vector-strokes'),b=activeBoard();if(!svg||!b||b.boardType!=='free')return;const groups=[...new Set((b.strokes||[]).map(s=>s.stampInstanceId).filter(Boolean))];for(const group of groups){const q=m1211StampBounds(group);if(!q)continue;const r=document.createElementNS('http://www.w3.org/2000/svg','rect');r.setAttribute('x',q.x-6);r.setAttribute('y',q.y-6);r.setAttribute('width',q.w+12);r.setAttribute('height',q.h+12);r.setAttribute('class','m1211-stamp-hit'+(m1211SelectedStamp===group?' selected':''));r.dataset.m1211StampHit=group;svg.append(r)}
-  svg.querySelectorAll('[data-m1211-stamp-hit]').forEach(hit=>hit.onpointerdown=e=>{if(boardTool!=='select'||e.button!==0)return;e.preventDefault();e.stopPropagation();m1211SelectedStamp=hit.dataset.m1211StampHit;drawStrokes();const strokes=b.strokes.filter(s=>s.stampInstanceId===m1211SelectedStamp),start={x:e.clientX,y:e.clientY},orig=strokes.map(s=>({s,points:s.points.map(p=>({...p}))})),zoom=b.zoom||1;pushBoardUndo();
-    const move=ev=>{const dx=(ev.clientX-start.x)/zoom,dy=(ev.clientY-start.y)/zoom;for(const row of orig)row.s.points=row.points.map(p=>({x:p.x+dx,y:p.y+dy}));m1211PrevDrawStrokes();};
-    const done=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',done);changed();drawStrokes()};window.addEventListener('pointermove',move);window.addEventListener('pointerup',done,{once:true});});
-};
+// El render de trazos de 1.13 sustituye la capa de sellos de 1.12.1.
+// Sus impresiones se seleccionan ahora mediante stampInstanceId y el hit SVG activo.
 function m1211StampOnboarding(){const btn=document.querySelector('[data-action="stamp-create"]');if(!btn||btn.dataset.m1211Onboard)return;btn.dataset.m1211Onboard='1';btn.addEventListener('click',()=>{if(m112StorageGet('margen-1211-stamp-help'))return;m112StorageSet('margen-1211-stamp-help','1');setTimeout(()=>showToast(m1211T('Sello: encierra un trazo o varios. Al guardarlo podrás estamparlos repetidamente y mover cada impresión como conjunto.','Stamp: enclose one or several strokes. Save them to repeat the stamp and move each impression as a group.')),0)},true)}
 
 

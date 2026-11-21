@@ -9,12 +9,15 @@ assert package['version']=='1.13.2' and conf['version']==package['version']
 assert re.search(r'^version\s*=\s*"1\.13\.2"',cargo,re.M)
 assert conf['identifier']=='com.margen.escritorio'
 index=(root/'frontend/index.html').read_text('utf8')
-for token in ['margen-1131.js','margen-1132.js','margen-1132.css','1.13.2']:
+for token in ['margen-1131.js','margen-board-model.js','margen-1132.js','margen-1132.css','1.13.2']:
     assert token in index,token
+assert index.index('margen-board-model.js') < index.index('margen-1132.js'), 'Modelo de pizarra debe cargarse antes del controlador'
 script=(root/'frontend/assets/margen-1132.js').read_text('utf8')
+assert 'MARGEN_BOARD_MODEL.expandSelection' in script
+assert 'MARGEN_BOARD_MODEL.copyForPaste' in script
 for token in ['m1132Expand','m1132ClearSelection','m1132MoveSelection','groupBoardItems=function','ungroupBoardItems=function','m113Paste=function','m113BindStrokeHits=function','m1211BindBoardSelection=function']:
     assert token in script,token
-for rel in ['index.html','assets/margen-1131.js','assets/margen-1132.js','assets/margen-1132.css']:
+for rel in ['index.html','assets/margen-1131.js','assets/margen-board-model.js','assets/margen-1132.js','assets/margen-1132.css']:
     assert (root/'frontend'/rel).read_bytes()==(root/'dist'/rel).read_bytes(),rel
 backend=(root/'src-tauri/src/lib.rs').read_text('utf8')
 for token in ['desktop_export_book','MARGEN_BOOK','formatVersion','single_book_export_payload']:

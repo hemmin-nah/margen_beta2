@@ -43,6 +43,12 @@ jobs:
       - name: Instalar dependencias y CLI Tauri
         run: npm install
 
+      - name: Probar reglas de agrupación y geometría de pizarra (sin red)
+        run: node pruebas/test_1132_board_model.cjs
+
+      - name: Verificar controladores activos de la pizarra (sin red)
+        run: python pruebas/test_1132_board_controller_consolidation.py
+
       - name: Probar mantenimiento del frontend (sin red)
         run: python pruebas/test_1132_frontend_maintenance.py
 

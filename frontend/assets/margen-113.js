@@ -69,14 +69,7 @@ function m113Recenter(){
 
 const m113PrevUpdateCursor=updateBoardCursor;
 updateBoardCursor=function(){const r=m113PrevUpdateCursor();document.getElementById('board-viewport')?.classList.toggle('m113-select-mode',boardTool==='select');return r};
-// El desplazamiento de notas/imágenes ya no tiene límites perceptibles del lienzo antiguo.
-startItemDrag=function(e,item,node,kind){
- if(boardTool!=='select'||item?.locked)return;e.preventDefault();e.stopPropagation();m113BlurBoardEditor();m113PushUndo();setSelected(item.id);
- const b=activeBoard(),zoom=b?.zoom||1,startX=e.clientX,startY=e.clientY,orig={x:item.x,y:item.y,w:item.w,h:item.h};
- const move=evt=>{const dx=(evt.clientX-startX)/zoom,dy=(evt.clientY-startY)/zoom;if(kind==='move'){item.x=Math.max(0,Math.min(M113_WORLD_W-80,orig.x+dx));item.y=Math.max(0,Math.min(M113_WORLD_H-60,orig.y+dy));node.style.left=item.x+'px';node.style.top=item.y+'px'}else{item.w=Math.max(80,Math.min(3200,orig.w+dx));item.h=Math.max(60,Math.min(2600,orig.h+dy));node.style.width=item.w+'px';node.style.height=item.h+'px'}};
- const done=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',done,true);window.removeEventListener('pointercancel',done,true);changed();m113Recenter()};
- window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',done,{once:true,capture:true});window.addEventListener('pointercancel',done,{once:true,capture:true});
-};
+// El arrastre de elementos se resuelve en el controlador de 1.13.2.
 function m113BlurBoardEditor(){const a=document.activeElement;if(a?.closest?.('#board-items')&&a.matches?.('input,textarea,[contenteditable="true"]'))a.blur()}
 
 function m113StrokeD(stroke){const pts=stroke?.points||[];if(!pts.length)return '';return pts.map((p,i)=>`${i?'L':'M'} ${Number(p.x)||0} ${Number(p.y)||0}`).join(' ')}
@@ -90,18 +83,8 @@ function m113DrawStrokes(){
 }
 drawStrokes=m113DrawStrokes;
 
-function m113BindStrokeHits(){
- if(!m113IsFreeBoard())return;const b=activeBoard(),svg=document.getElementById('m162-vector-strokes');if(!b||!svg)return;
- svg.querySelectorAll('[data-m113-stroke]').forEach(hit=>hit.onpointerdown=e=>{
-  if(boardTool!=='select'||e.button!==0)return;e.preventDefault();e.stopPropagation();m113BlurBoardEditor();const id=hit.dataset.m113Stroke;
-  const clicked=b.strokes.find(s=>s.id===id),groupIds=clicked?.stampInstanceId?(b.strokes||[]).filter(s=>s.stampInstanceId===clicked.stampInstanceId).map(s=>s.id):[id];
-  if(e.ctrlKey||e.metaKey){const all=groupIds.every(x=>m113SelectedStrokeIds.has(x));for(const sid of groupIds){if(all)m113SelectedStrokeIds.delete(sid);else m113SelectedStrokeIds.add(sid)}}else if(!groupIds.every(x=>m113SelectedStrokeIds.has(x))){m113SelectedStrokeIds.clear();for(const sid of groupIds)m113SelectedStrokeIds.add(sid);try{boardSelectedIds?.clear?.()}catch(_e){}selectedElement=null}
-  m113DrawStrokes();if(!groupIds.some(x=>m113SelectedStrokeIds.has(x)))return;
-  m113PushUndo();const ids=new Set(m113SelectedStrokeIds),rows=(b.strokes||[]).filter(s=>ids.has(s.id)),orig=rows.map(s=>({s,points:(s.points||[]).map(p=>({...p}))})),start={x:e.clientX,y:e.clientY},zoom=b.zoom||1;
-  const move=ev=>{const dx=(ev.clientX-start.x)/zoom,dy=(ev.clientY-start.y)/zoom;for(const row of orig)row.s.points=row.points.map(p=>({x:p.x+dx,y:p.y+dy}));m113DrawStrokes()};
-  const done=()=>{window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',done,true);changed();m113Recenter()};window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',done,{once:true,capture:true});
- });
-}
+// Enlazador definitivo de trazos: margen-1132.js.
+let m113BindStrokeHits;
 
 const m113PrevSetSelected=setSelected;
 setSelected=function(id){if(id)m113SelectedStrokeIds.clear();const r=m113PrevSetSelected(id);m113DrawStrokes();return r};
@@ -114,7 +97,8 @@ deleteSelected=m113DeleteSelection;
 
 function m113SelectTool(tool){boardTool=tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('on',x.dataset.tool===tool));updateBoardCursor()}
 function m113Copy(){const b=activeBoard();if(!b)return;const ids=new Set(boardSelectedIds?.size?[...boardSelectedIds]:(selectedElement?[selectedElement]:[]));const strokeIds=new Set(m113SelectedStrokeIds);if(!ids.size&&!strokeIds.size)return;m113Clipboard={elements:b.elements.filter(x=>ids.has(x.id)).map(x=>structuredClone(x)),strokes:b.strokes.filter(x=>strokeIds.has(x.id)).map(x=>structuredClone(x))};showToast(m113T('Selección copiada','Selection copied'))}
-function m113Paste(){const b=activeBoard();if(!b||!m113Clipboard)return;m113PushUndo();try{boardSelectedIds?.clear?.()}catch(_e){}m113SelectedStrokeIds.clear();const pasted=[];for(const src of m113Clipboard.elements||[]){const x=structuredClone(src);x.id=uid();x.x=(Number(x.x)||0)+45;x.y=(Number(x.y)||0)+45;delete x.groupId;b.elements.push(x);pasted.push(x.id)}for(const src of m113Clipboard.strokes||[]){const s=structuredClone(src);s.id=uid();delete s.stampInstanceId;s.points=(s.points||[]).map(p=>({x:p.x+45,y:p.y+45}));b.strokes.push(s);m113SelectedStrokeIds.add(s.id)}for(const id of pasted)boardSelectedIds?.add?.(id);selectedElement=pasted[0]||null;renderBoardElements();m113DrawStrokes();changed()}
+// Pegado definitivo (preserva groupId/stampInstanceId): margen-1132.js.
+let m113Paste;
 
 function m113GlobalKeyDown(e){
  if(!m113IsFreeBoard())return;const editable=!!e.target?.closest?.('input,textarea,select,[contenteditable="true"]'),ctrl=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
