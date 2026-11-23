@@ -79,6 +79,9 @@ jobs:
       - name: Probar vistas de fichas y papel de líneas 1.13.4
         run: python pruebas/test_1134_static.py
 
+      - name: Integridad de actualización 1.13.5 (sin navegador)
+        run: python pruebas/test_1135_static.py
+
       - name: Pruebas Rust
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
@@ -99,7 +102,7 @@ jobs:
       - name: Publicar fuentes y licencias comprobadas
         uses: actions/upload-artifact@v4
         with:
-          name: MARGEN-1.13.4-Fuentes-y-Licencias
+          name: MARGEN-1.13.5-Fuentes-y-Licencias
           path: |
             src-tauri/resources/LEGAL_LEXICONS.txt
             src-tauri/resources/lexicons/SOURCE_MANIFEST.json
@@ -109,13 +112,13 @@ jobs:
       - name: Publicar instalador como artefacto privado del workflow
         uses: actions/upload-artifact@v4
         with:
-          name: MARGEN-1.13.4-Windows-x64
+          name: MARGEN-1.13.5-Windows-x64
           path: src-tauri/target/release/bundle/nsis/*-setup.exe
           if-no-files-found: error
 
       - name: Publicar ejecutable (sin instalador)
         uses: actions/upload-artifact@v4
         with:
-          name: MARGEN-1.13.4-Ejecutable-x64
+          name: MARGEN-1.13.5-Ejecutable-x64
           path: src-tauri/target/release/margen-desktop.exe
           if-no-files-found: error

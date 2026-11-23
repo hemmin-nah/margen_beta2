@@ -60,19 +60,12 @@ with sync_playwright() as pw:
     page.locator('[data-action="m1134-overview"]').click()
     assert page.locator('.m1134-card').count()==1
     page.evaluate("state.view='boards';render()")
-    assert page.locator('.board-world.bg-ruled .m162-ruled-paper path').count()==1
-    ruled=page.locator('.m162-ruled-paper path').first.get_attribute('d')
-    assert 'M 0 54.5 H 20000' in ruled and 'M 0 95.5 H 20000' in ruled
-    page.evaluate("document.getElementById('board-background').value='wide';document.getElementById('board-background').dispatchEvent(new Event('change',{bubbles:true}))")
-    page.wait_for_timeout(80)
-    wide=page.locator('.m162-ruled-paper path').first.get_attribute('d')
-    assert 'M 0 73.5 H 20000' in wide and 'M 0 147.5 H 20000' in wide
-    page.evaluate("document.getElementById('board-background').value='notebook';document.getElementById('board-background').dispatchEvent(new Event('change',{bubbles:true}))")
-    page.wait_for_timeout(80)
-    assert page.locator('.m162-ruled-paper path').count()==2
-    page.evaluate("document.getElementById('board-background').value='grid';document.getElementById('board-background').dispatchEvent(new Event('change',{bubbles:true}))")
-    page.wait_for_timeout(80)
-    assert page.locator('.m162-ruled-paper path').count()==0
+    # El fondo 1.13.5 se pinta en CSS, no con un SVG gigante oculto.
+    for kind in ['ruled','wide','notebook']:
+        page.evaluate("kind=>{activeBoard().background=kind;document.getElementById('board-world').className='board-world bg-'+kind;m1134DrawPaper()}",kind)
+        assert 'gradient' in page.locator('#board-world').evaluate('e=>getComputedStyle(e).backgroundImage')
+        assert page.locator('.m162-ruled-paper').count()==0
+    page.evaluate("activeBoard().background='grid';document.getElementById('board-world').className='board-world bg-grid';m1134DrawPaper()")
     assert not errors,errors
     browser.close()
 print('OK: tarjetas personajes/escenarios, edición, vista general y papel vectorial uniforme.')

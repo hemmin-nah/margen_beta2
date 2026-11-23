@@ -1,0 +1,43 @@
+/* MARGEN 1.13.5: papel de líneas visible y estable al transformar el mundo. */
+.board-world.bg-ruled{
+ background-image:repeating-linear-gradient(to bottom,transparent 0px,transparent 40px,var(--grid) 40px,var(--grid) 41px)!important;
+ background-size:100% 41px!important;background-position:0 13px!important;
+}
+.board-world.bg-wide{
+ background-image:repeating-linear-gradient(to bottom,transparent 0px,transparent 73px,var(--grid) 73px,var(--grid) 74px)!important;
+ background-size:100% 74px!important;background-position:0 0!important;
+}
+.board-world.bg-notebook{
+ background-image:linear-gradient(to right,transparent 0,transparent 109px,color-mix(in srgb,var(--danger) 32%,transparent) 109px,color-mix(in srgb,var(--danger) 32%,transparent) 111px,transparent 111px),repeating-linear-gradient(to bottom,transparent 0px,transparent 32px,var(--grid) 32px,var(--grid) 33px)!important;
+ background-size:100% 100%,100% 33px!important;background-position:0 0,0 0!important;
+}
+.board-world .m162-ruled-paper{display:none!important}
+/* Barra de carpetas: visual del prototipo, ajustada al tema y tamaños de MARGEN. */
+.m1134-folder-strip{display:flex;gap:8px;align-items:center;padding:0 clamp(18px,2.5vw,42px) 8px;flex:none;min-width:0}
+.m1134-folder-chips{display:flex;align-items:center;gap:11px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;padding:5px 0}
+.m1134-folder-chips::-webkit-scrollbar{display:none}
+.m1134-folder-chip{border:1px solid var(--line);border-radius:999px;background:var(--surface2);color:var(--muted);white-space:nowrap;font:12px/1.3 'Segoe UI',system-ui,sans-serif;padding:8px 18px;min-width:95px;transition:background .15s}
+.m1134-folder-chip.active,.m1134-folder-chip:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong)}
+.m1134-folder-scroll{flex:none;min-width:27px;height:30px;border:0;background:transparent;color:var(--muted);font-size:28px;line-height:1;cursor:pointer}
+.m1134-folder-scroll:hover{color:var(--accent-strong)}
+.m1134-no-results{padding:45px 20px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:12px}
+.m1134-scroll{padding-top:18px}
+.m1134-pill{flex:1 1 0;max-width:calc(25% - 5px);padding-inline:5px}
+/* Los dos botones extra de cabecera no pueden desplazar su posición al entrar. */
+.tree-section[data-section="characters"] .tree-heading,.tree-section[data-section="settings"] .tree-heading{justify-content:flex-start;gap:3px}
+.tree-section[data-section="characters"] .tree-category,.tree-section[data-section="settings"] .tree-category{min-width:0;flex:1 1 auto}
+.tree-section[data-section="characters"] .m112-folder-add,.tree-section[data-section="settings"] .m112-folder-add{margin-left:0;margin-right:0;flex:none}
+.tree-section[data-section="characters"] .m1134-grid-link,.tree-section[data-section="settings"] .m1134-grid-link{margin-left:0;flex:none}
+.tree-section[data-section="characters"] .tree-heading>.mini-add,.tree-section[data-section="settings"] .tree-heading>.mini-add{flex:none}
+/* Numeración de niveles anidados y marcadores alineados con el contenido. */
+#chapter-editor ol{list-style:none;counter-reset:m1135-list;padding-inline-start:1.5em}
+#chapter-editor ol>li{list-style:none;counter-increment:m1135-list}
+#chapter-editor ol>li::before{content:counters(m1135-list,'.') '. ';display:inline;margin-inline-end:.32em;font-variant-numeric:tabular-nums;color:inherit}
+#chapter-editor ol>li[style*="right"],#chapter-editor ul>li[style*="right"]{text-align:right;list-style-position:inside}
+#chapter-editor ul>li[style*="right"],#chapter-editor ul>li.m1135-right-list{list-style-position:inside;text-align:right}
+#chapter-editor ul>li[style*="right"]::marker{text-align:right}
+#chapter-editor li.m112-centered-list{text-align:center;list-style-position:inside}
+.m1135-text-size{display:inline-flex;align-items:center;gap:5px;font:11px 'Segoe UI',system-ui,sans-serif;color:var(--muted);white-space:nowrap;margin:0 4px}
+.m1135-text-size select{background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:5px 7px;max-width:105px;font:12px 'Segoe UI',system-ui,sans-serif;color:var(--ink)}
+.m1135-text-size select:focus{border-color:var(--accent)}
+@media(max-width:700px){.m1134-folder-strip{padding-inline:15px}.m1134-folder-chip{padding:7px 12px;min-width:0}}

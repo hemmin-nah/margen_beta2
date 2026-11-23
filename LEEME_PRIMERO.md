@@ -1,6 +1,15 @@
-# MARGEN 1.13.4 Beta — Proyecto Windows / Tauri
+# MARGEN 1.13.5 Beta — Proyecto Windows / Tauri
 
-**Base: MARGEN 1.13.3 con importación individual y pizarra consolidada.** La 1.13.4 añade las fichas en tarjetas y mejora los fondos de líneas. No incluye instalador `.exe`.
+**Base: MARGEN 1.13.4 con fichas en tarjetas e importación individual.** La 1.13.5 corrige el fondo de líneas y añade ajustes del editor, filtro de carpetas y apertura a un clic. No incluye instalador `.exe`.
+
+## Novedad de la versión 1.13.5
+
+- **Editor:** control independiente de tamaño en píxeles de la selección, del bloque de texto o del título editorial del capítulo, sin modificar la tipografía general de todos los párrafos; listas numeradas con niveles jerárquicos y ajuste de viñetas cuando el contenido se alinea a la derecha.
+- **Pizarra:** los tres fondos de líneas se dibujan con gradientes CSS sobre el lienzo (se retira el enorme SVG oculto de 1.13.4). Crear notas, textos e imágenes utiliza el centro visible del lienzo grande. Los trazos de pincel guardan su estado anterior y desdibujan el foco de notas al comenzar, para que Ctrl+Z actúe sobre el dibujo; el cuentagotas actualiza el color del primer trazo.
+- **Fichas de personaje y escenario:** máximo cuatro etiquetas por tarjeta; encima de la cuadrícula aparecen pestañas de las carpetas existentes, «Todas las fichas» y «Sin carpeta», que filtran la vista sin alterar la organización. Botones de la barra izquierda con posiciones estables.
+- **Biblioteca:** clic único sobre la portada/tarjeta, incluso para libros de carga diferida.
+
+El proyecto mantiene el identificador y formato de datos de la 1.13.4. No hay migración de SQLite. Ver `CAMBIOS_1135.md` y `GUIA_BETA_TESTER_1135.md`.
 
 ## Novedad de la versión 1.13.4
 
@@ -66,8 +75,10 @@ python pruebas/test_1133_single_book_import_static.py
 python pruebas/test_1133_single_book_import_ui.py
 python pruebas/test_1134_static.py
 python pruebas/test_1134_cards_and_lines.py  # solo en local con Playwright y Chromium
+python pruebas/test_1135_static.py
+python pruebas/test_1135_beta.py  # solo en local con Playwright y Chromium
 ```
 
 El paso `python herramientas_lexicas.py --build` requiere acceso a las fuentes oficiales de los diccionarios y la verificación de licencias sigue activa.
 
-La actualización **cambia la versión a 1.13.4**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.
+La actualización **cambia la versión a 1.13.5**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.

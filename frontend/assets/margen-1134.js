@@ -5,11 +5,13 @@
  * Fondos de líneas: una única geometría vectorial en el espacio de la pizarra.
  */
 let m1134Overview = null;
+const m1134ActiveFolder={characters:'all',settings:'all'};
+let m1134FolderProject=null;
 const m1134T = (es,en) => typeof m146T==='function' ? m146T(es,en) : es;
 const m1134Kinds = {characters:{array:'characters',key:'activeCharacterId',title:'Fichas de personaje',titleEn:'Character sheets',singular:'personaje',newLabel:'Nuevo personaje',icon:'users'},settings:{array:'settings',key:'activeSettingId',title:'Fichas de escenario',titleEn:'Setting sheets',singular:'escenario',newLabel:'Nuevo escenario',icon:'map'}};
 function m1134Labels(record){
  const source=Array.isArray(record?.tags)?record.tags:typeof record?.tags==='string'?record.tags.split(','):[];
- return [...new Set(source.map(x=>String(x||'').trim()).filter(Boolean))].slice(0,8);
+ return [...new Set(source.map(x=>String(x||'').trim()).filter(Boolean))].slice(0,4);
 }
 function m1134Photo(record){
  const photo=typeof m1211MainPhoto==='function'?m1211MainPhoto(record):record?.gallery?.find(x=>x.id===record.mainPhotoId)||record?.gallery?.[0];
@@ -33,18 +35,24 @@ function m1134GridCard(record,type){
 }
 function m1134Grid(p,type){
  const cfg=m1134Kinds[type];if(!cfg)return '';
- const data=p[cfg.array]||[],isChar=type==='characters';
+ if(m1134FolderProject!==p.id){m1134FolderProject=p.id;m1134ActiveFolder.characters='all';m1134ActiveFolder.settings='all'}
+ const isChar=type==='characters',folders=p[isChar?'characterFolders':'settingFolders']||[];
+ const validIds=new Set(folders.map(f=>f.id));if(!validIds.has(m1134ActiveFolder[type])&&m1134ActiveFolder[type]!=='all'&&m1134ActiveFolder[type]!=='loose')m1134ActiveFolder[type]='all';
+ const current=m1134ActiveFolder[type],all=p[cfg.array]||[];
+ const data=all.filter(item=>current==='all'||(current==='loose'?!item.folderId:item.folderId===current));
+ const filters=[{id:'all',title:m1134T('Todas las fichas','All sheets')},...folders.map(f=>({id:f.id,title:f.title})),{id:'loose',title:m1134T('Sin carpeta','Unfiled')}];
+ const tabs=`<nav class="m1134-folder-strip" aria-label="${m1134T('Filtrar por carpeta','Filter by folder')}"><button class="m1134-folder-scroll" type="button" data-action="m1134-folder-scroll" data-direction="-1" aria-label="${m1134T('Desplazar carpetas a la izquierda','Scroll folders left')}">‹</button><div class="m1134-folder-chips">${filters.map(f=>`<button type="button" class="m1134-folder-chip ${current===f.id?'active':''}" data-action="m1134-folder" data-m1134-type="${type}" data-folder="${esc(f.id)}" aria-pressed="${current===f.id}">${esc(f.title)}</button>`).join('')}</div><button class="m1134-folder-scroll" type="button" data-action="m1134-folder-scroll" data-direction="1" aria-label="${m1134T('Desplazar carpetas a la derecha','Scroll folders right')}">›</button></nav>`;
  const heading=`<div class="workspace-head m1134-head"><div><div class="eyebrow">${esc(p.name)} · ${m1134T(isChar?'Personajes':'Escenarios',isChar?'Characters':'Settings')}</div><h1>${m1134T(cfg.title,cfg.titleEn)}</h1></div><div class="head-actions"><button class="btn ghost m1134-trash" type="button" data-action="m1134-trash" title="${m1134T('Archivo y papelera','Archive and trash')}">${ic('trash')}</button><button class="btn primary" data-action="add-${isChar?'character':'setting'}">${ic('plus')} ${m1134T(cfg.newLabel,isChar?'New character':'New setting')}</button></div></div>`;
  // Los formularios invisibles conservan los enlaces de versiones anteriores que
  // se inicializan incluso cuando no estamos editando una ficha concreta.
  const compatibility=`<div class="m1134-compat-fields" hidden><input id="fiche-title" value=""><input id="fiche-subtitle" value=""><div id="fiche-body" contenteditable="false"></div></div>`;
- if(!data.length)return heading+compatibility+`<div class="empty-state">${ic(cfg.icon)}<h2>${m1134T('Aún no hay fichas','No sheets yet')}</h2><p>${m1134T('Crea tu primera ficha y aparecerá aquí.','Create your first sheet and it will appear here.')}</p><button class="btn primary" data-action="add-${isChar?'character':'setting'}">${ic('plus')} ${m1134T(cfg.newLabel,isChar?'New character':'New setting')}</button></div>`;
- return heading+compatibility+`<div class="main-scroll m1134-scroll"><div class="m1134-grid" aria-label="${m1134T(cfg.title,cfg.titleEn)}">${data.map(item=>m1134GridCard(item,type)).join('')}</div></div>`;
+ if(!all.length)return heading+compatibility+tabs+`<div class="empty-state">${ic(cfg.icon)}<h2>${m1134T('Aún no hay fichas','No sheets yet')}</h2><p>${m1134T('Crea tu primera ficha y aparecerá aquí.','Create your first sheet and it will appear here.')}</p><button class="btn primary" data-action="add-${isChar?'character':'setting'}">${ic('plus')} ${m1134T(cfg.newLabel,isChar?'New character':'New setting')}</button></div>`;
+ return heading+compatibility+tabs+`<div class="main-scroll m1134-scroll">${data.length?`<div class="m1134-grid" aria-label="${m1134T(cfg.title,cfg.titleEn)}">${data.map(item=>m1134GridCard(item,type)).join('')}</div>`:`<div class="m1134-no-results">${m1134T('No hay fichas en esta carpeta.','No sheets in this folder.')}</div>`}</div>`;
 }
 function m1134MetadataFields(record,type){
  const desc=m1134T('Descripción breve','Short description'),placeholder=m1134T('Una o dos líneas para la vista de tarjetas…','One or two lines for the card view…');
  const labels=m1134Labels(record).join(', ');
- return `<section class="m1134-card-fields" aria-label="${m1134T('Información de la tarjeta','Card information')}"><label>${desc}<textarea rows="2" maxlength="250" data-m1134-field="summary" placeholder="${placeholder}">${esc(record.summary||'')}</textarea></label><label>${m1134T('Etiquetas de la tarjeta','Card labels')}<input type="text" maxlength="300" data-m1134-field="tags" value="${esc(labels)}" placeholder="${m1134T('Principal, Familia, Nueva York…','Main, Family, New York…')}"><small>${m1134T('Sepáralas con comas; cada una aparecerá como una etiqueta.','Separate with commas; each will appear as a label.')}</small></label></section>`;
+ return `<section class="m1134-card-fields" aria-label="${m1134T('Información de la tarjeta','Card information')}"><label>${desc}<textarea rows="2" maxlength="250" data-m1134-field="summary" placeholder="${placeholder}">${esc(record.summary||'')}</textarea></label><label>${m1134T('Etiquetas de la tarjeta','Card labels')}<input type="text" maxlength="300" data-m1134-field="tags" value="${esc(labels)}" placeholder="${m1134T('Principal, Familia, Nueva York…','Main, Family, New York…')}"><small>${m1134T('Máximo 4 etiquetas, separadas por comas.','Maximum 4 comma-separated labels.')}</small></label></section>`;
 }
 const m1134PreviousSheet=sheetHtml;
 sheetHtml=function(p,type){
@@ -67,6 +75,8 @@ function m1134OpenOverview(type){
 const m1134PreviousAction=onAction;
 onAction=async function(event){
  const node=event.currentTarget,action=node?.dataset?.action,type=node?.dataset?.m1134Type;
+ if(action==='m1134-folder'&&m1134Kinds[type]){m1134ActiveFolder[type]=node.dataset.folder||'all';render();return;}
+ if(action==='m1134-folder-scroll'){const track=node.parentElement?.querySelector('.m1134-folder-chips');track?.scrollBy({left:(Number(node.dataset.direction)||1)*300,behavior:'smooth'});return;}
  if(action==='m1134-overview'||action==='m1134-sidebar-grid'){m1134OpenOverview(type);return;}
  if(action==='m1134-trash'){state.view='notes';changed();render();return;}
  if(action==='m1134-open'&&m1134Kinds[type]){
@@ -104,9 +114,10 @@ wire=function(...args){
   const record=state.view==='characters'?activeCharacter():activeSetting();if(!record)return;
   node.addEventListener('input',()=>{
    if(node.dataset.m1134Field==='summary')record.summary=node.value;
-   else if(node.dataset.m1134Field==='tags')record.tags=[...new Set(node.value.split(',').map(x=>x.trim()).filter(Boolean))].slice(0,8);
+   else if(node.dataset.m1134Field==='tags')record.tags=[...new Set(node.value.split(',').map(x=>x.trim()).filter(Boolean))].slice(0,4);
    changed();
   });
+  if(node.dataset.m1134Field==='tags')node.addEventListener('blur',()=>{const tags=m1134Labels(record);node.value=tags.join(', ')});
  });
  if(state.view==='boards')document.getElementById('board-background')?.addEventListener('change',()=>requestAnimationFrame(m1134DrawPaper));
  m1134SidebarLinks();return result;

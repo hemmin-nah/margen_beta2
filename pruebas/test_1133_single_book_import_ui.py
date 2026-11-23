@@ -49,7 +49,7 @@ with sync_playwright() as pw:
     errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     page.set_content(html,wait_until='load');page.wait_for_timeout(900)
     page.evaluate("document.querySelectorAll('.m171-splash,.m170-intro-backdrop,.m171-guide-backdrop,.m111-backdrop').forEach(x=>x.remove())")
-    assert page.evaluate("document.querySelector('.brand .m11-version')?.textContent")=='1.13.4 · Beta'
+    assert page.evaluate("document.querySelector('.brand .m11-version')?.textContent")=='1.13.5 · Beta'
     assert page.locator('.m1133-library-import').count()==1
     # Separación explícita entre importación aditiva y restauración destructiva.
     page.locator('[data-action="restore"]').click();page.wait_for_timeout(50)

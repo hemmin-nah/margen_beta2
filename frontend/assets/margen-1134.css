@@ -24,7 +24,7 @@
 .m1134-card-fields textarea:focus,.m1134-card-fields input:focus{border-color:var(--accent)}
 .m1134-card-fields small{font-size:11px;color:var(--muted);font-weight:400}
 .m1134-grid-link{margin-left:auto}
-.board-world.bg-wide,.board-world.bg-notebook,.board-world.bg-ruled{background-image:none!important}
+/* Fondos de líneas: corregidos en margen-1135.css, sin SVG gigante. */
 .board-world.bg-wide .m162-ruled-paper,.board-world.bg-notebook .m162-ruled-paper,.board-world.bg-ruled .m162-ruled-paper{display:block}
 .board-world .m162-ruled-paper{z-index:0;pointer-events:none;overflow:hidden}
 @media(max-width:1440px){.m1134-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.m1134-card-title{font-size:27px}}

@@ -34,7 +34,7 @@ with sync_playwright() as pw:
  page.evaluate("document.querySelectorAll('.m171-splash,.m170-intro-backdrop,.m171-guide-backdrop,.modal-backdrop,.m111-backdrop').forEach(x=>x.remove())")
  page.evaluate("()=>{state.view='boards';state.activeProjectId='a';state.activeBoardId='b1';ensureSelections();render()}");page.wait_for_timeout(160)
  assert page.locator('#board-viewport').count()==1
- assert page.evaluate("document.querySelector('.brand .m11-version')?.textContent")=='1.13.4 · Beta'
+ assert page.evaluate("document.querySelector('.brand .m11-version')?.textContent")=='1.13.5 · Beta'
  assert page.evaluate('activeBoard().elements.length')==2
  # Sesión de puntero única: ignora otro pointerId y limpia al cancelar.
  pointer_case=page.evaluate("""()=>{
