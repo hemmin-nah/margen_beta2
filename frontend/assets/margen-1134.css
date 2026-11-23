@@ -1,0 +1,32 @@
+/* MARGEN 1.13.4 — Fichas compactas; paleta de temas existente. */
+.m1134-scroll{padding:30px clamp(18px,2.5vw,42px) 44px;overflow:auto;min-height:0;flex:1}
+.m1134-head{padding-bottom:20px}
+.m1134-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(18px,2.2vw,38px);row-gap:clamp(25px,3.3vw,58px);align-items:stretch}
+.m1134-card{position:relative;min-width:0;min-height:190px;background:var(--surface);border:1px solid var(--line);border-radius:17px;overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s}
+.m1134-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 8px 25px rgba(0,0,0,.08)}
+.m1134-card-open{display:flex;width:100%;height:100%;min-height:190px;flex-direction:column;align-items:stretch;text-align:left;border:0;background:transparent;padding:12px 13px 13px;cursor:pointer;gap:13px;color:inherit}
+.m1134-card-open:focus-visible,.m1134-card-remove:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.m1134-card-main{display:grid;grid-template-columns:93px minmax(0,1fr);gap:15px;align-items:start;min-height:118px}
+.m1134-photo{height:118px;width:93px;border-radius:11px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line);flex:none}
+.m1134-photo img{height:100%;width:100%;object-fit:cover;display:block}
+.m1134-placeholder{color:var(--muted)}.m1134-placeholder svg{height:34px;width:34px}
+.m1134-card-copy{min-width:0;display:flex;flex-direction:column;padding-right:3px}
+.m1134-card-title{font:normal clamp(22px,2vw,31px)/1.12 Georgia,'Times New Roman',serif;color:var(--ink);letter-spacing:-.02em;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid var(--muted);padding-bottom:5px;margin-bottom:5px}
+.m1134-card-subtitle{font:15px/1.3 'Segoe UI',system-ui,sans-serif;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:10px}
+.m1134-card-desc{font:13px/1.47 'Segoe UI',system-ui,sans-serif;color:var(--muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:38px;overflow-wrap:anywhere}
+.m1134-card-tags{display:flex;gap:7px;flex-wrap:nowrap;min-height:27px;overflow:hidden;margin-top:auto}
+.m1134-pill{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 12px;border-radius:999px;font:12px/1.2 Georgia,serif;text-align:center;color:var(--accent-strong);background:var(--accent-soft)}
+.m1134-card-remove{position:absolute;right:7px;top:5px;width:24px;height:26px;display:grid;place-items:center;border:0;background:transparent;border-radius:8px;color:var(--muted);font-size:19px;line-height:1;z-index:1;cursor:pointer}
+.m1134-card-remove:hover{color:var(--danger);background:var(--surface2)}
+.m1134-card-fields{border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.m1134-card-fields label{font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:6px;min-width:0}
+.m1134-card-fields textarea,.m1134-card-fields input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 11px;outline:none;color:var(--ink);width:100%;resize:vertical;font-size:13px;font-weight:400}
+.m1134-card-fields textarea:focus,.m1134-card-fields input:focus{border-color:var(--accent)}
+.m1134-card-fields small{font-size:11px;color:var(--muted);font-weight:400}
+.m1134-grid-link{margin-left:auto}
+.board-world.bg-wide,.board-world.bg-notebook,.board-world.bg-ruled{background-image:none!important}
+.board-world.bg-wide .m162-ruled-paper,.board-world.bg-notebook .m162-ruled-paper,.board-world.bg-ruled .m162-ruled-paper{display:block}
+.board-world .m162-ruled-paper{z-index:0;pointer-events:none;overflow:hidden}
+@media(max-width:1440px){.m1134-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.m1134-card-title{font-size:27px}}
+@media(max-width:1000px){.m1134-grid{grid-template-columns:minmax(0,1fr)}.m1134-card-fields{grid-template-columns:1fr}.m1134-scroll{padding:20px}.m1134-card{max-width:650px}}
+@media(max-width:650px){.m1134-card-main{grid-template-columns:75px minmax(0,1fr)}.m1134-photo{width:75px;height:104px}.m1134-card-open{min-height:170px}.m1134-card-title{font-size:23px}}

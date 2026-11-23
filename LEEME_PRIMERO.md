@@ -1,6 +1,14 @@
-# MARGEN 1.13.3 Beta — Proyecto Windows / Tauri
+# MARGEN 1.13.4 Beta — Proyecto Windows / Tauri
 
-**Base: MARGEN 1.13.2 con pizarra consolidada y corrección de HTTP 503.** Esta versión añade la importación individual de libros. No incluye instalador `.exe`.
+**Base: MARGEN 1.13.3 con importación individual y pizarra consolidada.** La 1.13.4 añade las fichas en tarjetas y mejora los fondos de líneas. No incluye instalador `.exe`.
+
+## Novedad de la versión 1.13.4
+
+**Personajes y escenarios:** nueva vista en tarjetas según el diseño de referencia, con imagen principal, nombre, rol/tipo, descripción breve y etiquetas. Se abre desde «Ver tarjetas» (icono de cuadrícula de las secciones de la barra lateral) o desde las secciones de la vista general del libro. Clic en la tarjeta → ficha completa (no se pierden sus campos). «Ver todas las fichas» permite regresar. En cada ficha hay dos campos opcionales nuevos: descripción breve y etiquetas separadas por comas. La X sobre la tarjeta **pide confirmación y envía a la papelera recuperable**, no elimina definitivamente.
+
+**Pizarra:** fondos de «Líneas normales», «Líneas espaciadas» y «Libreta con margen» trazados como una geometría SVG única, con líneas uniformes y rectas, incluso con zoom. No modifica los dibujos del usuario ni sus datos.
+
+**Compatibilidad:** sin migración de SQLite, mismos IDs y estructura JSON; los nuevos campos en las fichas son opcionales. La importación individual `MARGEN_BOOK` de 1.13.3 se conserva. Ver `CAMBIOS_1134.md` y `GUIA_BETA_TESTER_1134.md`.
 
 ## Novedad de la versión 1.13.3
 
@@ -19,7 +27,7 @@ Se puede **importar un solo libro MARGEN_BOOK v1 sin sustituir los demás**. Des
 
 La selección por grupos, geometría del rectángulo de selección, cálculo de límites al mover y clonación de grupos se han extraído a **`frontend/assets/margen-board-model.js`**, un módulo sin acceso al DOM, Rust o SQLite. El controlador `margen-1132.js` sigue gestionando punteros, elementos visuales e historial; no cambia el esquema de datos.
 
-El HTML debe cargar `margen-board-model.js` **antes** de `margen-1132.js`. El workflow de GitHub lo comprueba con pruebas Node, y `herramientas_frontend.py` valida los 19 scripts activos. Consulta `INFORME_PIZARRA_REFACTORIZACION_1132.md`.
+El HTML debe cargar `margen-board-model.js` **antes** de `margen-1132.js`. El workflow de GitHub lo comprueba con pruebas Node, y `herramientas_frontend.py` valida los 20 scripts activos. Consulta `INFORME_PIZARRA_REFACTORIZACION_1132.md`.
 
 ## Revisión interna del código
 
@@ -35,7 +43,7 @@ Se han retirado las versiones sobrescritas de selección rectangular, controles 
 2. Extrae el ZIP y sube **el contenido interior de la carpeta** a GitHub, incluidas `.github`, `frontend`, `src-tauri`, `pruebas`, `herramientas_frontend.py`, `herramientas_lexicas.py` y `package.json`.
 3. **Muy importante:** si reutilizas un repositorio con archivos antiguos, al subir nuevos ficheros GitHub NO borra los anteriores. Elimina del repositorio los archivos obsoletos antes de dar la limpieza por terminada. Consulta `INFORME_LIMPIEZA_1132.md`.
 4. En GitHub, abre **Actions → Compilar MARGEN para Windows → Run workflow**. No pulses "Re-run" de una ejecución antigua, porque usa el commit original.
-5. Si todo acaba en verde, descarga **MARGEN-1.13.3-Windows-x64** y utiliza el instalador `.exe` dentro del artefacto.
+5. Si todo acaba en verde, descarga **MARGEN-1.13.4-Windows-x64** y utiliza el instalador `.exe` dentro del artefacto.
 
 El workflow reconstruye `dist/` antes de ejecutar las pruebas Rust. También se ha configurado `beforeBuildCommand` para que un build Tauri directo lo regenere.
 
@@ -56,8 +64,10 @@ python pruebas/test_1132_board_groups.py
 node pruebas/test_1133_book_import_model.cjs
 python pruebas/test_1133_single_book_import_static.py
 python pruebas/test_1133_single_book_import_ui.py
+python pruebas/test_1134_static.py
+python pruebas/test_1134_cards_and_lines.py  # solo en local con Playwright y Chromium
 ```
 
 El paso `python herramientas_lexicas.py --build` requiere acceso a las fuentes oficiales de los diccionarios y la verificación de licencias sigue activa.
 
-La actualización **cambia la versión a 1.13.3**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.
+La actualización **cambia la versión a 1.13.4**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.
