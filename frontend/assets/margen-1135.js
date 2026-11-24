@@ -52,58 +52,92 @@ function m1135BoardCapture(){
  }
 }
 
-/* Tamaño de letra individual de selección, bloque o título editorial.
- * Los atributos inline sobreviven al autoguardado / exportación HTML existente. */
-function m1135SetTextSize(px,forTitle=false){
+/* Tamaño del texto. Se reutiliza el botón ORIGINAL «Tamaño» (#chapter-size):
+ * - texto seleccionado: solo cambia el fragmento, aunque sea un encabezado;
+ * - título editorial enfocado: solo cambia el tamaño del título;
+ * - sin selección: sigue cambiando la tipografía base del capítulo.
+ * Nunca se añade otro selector a la barra. */
+let m1135SizeRange=null,m1135SizeChapterId=null,m1135SizeTitle=false;
+function m1135SelectionInsideEditor(range,editor){
+ return !!(range&&editor&&editor.contains(range.commonAncestorContainer));
+}
+function m1135RememberSizeSelection(){
+ const editor=document.getElementById('chapter-editor'),title=document.getElementById('chapter-title'),ch=activeChapter();
+ if(!editor||!ch)return;
+ if(document.activeElement===title){m1135SizeTitle=true;m1135SizeRange=null;m1135SizeChapterId=ch.id;return;}
+ const sel=window.getSelection(),range=sel?.rangeCount?sel.getRangeAt(0):null;
+ if(m1135SelectionInsideEditor(range,editor)){
+  m1135SizeRange=range.collapsed?null:range.cloneRange();
+  m1135SizeChapterId=ch.id;m1135SizeTitle=false;
+ }
+}
+// Recordar la selección antes de que el input numérico robe el foco.
+document.addEventListener('selectionchange',()=>{
+ if(state.view==='manuscript')m1135RememberSizeSelection();
+});
+document.addEventListener('pointerdown',event=>{
+ if(state.view!=='manuscript')return;
+ if(event.target.closest('#chapter-size')){m1135RememberSizeSelection();return;}
+ if(!event.target.closest('#chapter-editor,#chapter-title')){
+  m1135SizeRange=null;m1135SizeTitle=false;m1135SizeChapterId=null;
+ }
+},true);
+function m1135SetTextSize(px,forTitle=false,storedRange=null){
  const editor=document.getElementById('chapter-editor'),chapter=activeChapter(),title=document.getElementById('chapter-title');
- if(!chapter||!editor||!Number.isInteger(px)||px<10||px>72)return;
- const selection=window.getSelection(),range=selection?.rangeCount?selection.getRangeAt(0):null;
- const inEditor=range&&editor.contains(range.commonAncestorContainer);
- if(forTitle||(!inEditor&&document.activeElement===title)){
+ if(!chapter||!editor||!Number.isInteger(px)||px<11||px>32)return false;
+ if(forTitle){
   chapter.titleLayout=chapter.titleLayout||{};
   chapter.titleLayout.fontSize=px;
-  title.style.fontSize=px+'px';chapter.updatedAt=now();changed();return;
+  if(title)title.style.fontSize=px+'px';
+  chapter.updatedAt=now();changed();return true;
  }
- if(!inEditor){showToast(m1135T('Selecciona un texto o coloca el cursor en un párrafo.','Select text or place the caret in a paragraph.'));return;}
- if(range.collapsed){
-  const parent=(range.startContainer.nodeType===1?range.startContainer:range.startContainer.parentElement);
-  const block=parent?.closest?.('h1,h2,h3,h4,h5,h6,p,li,blockquote,div');
-  if(block&&editor.contains(block)){block.style.fontSize=px+'px';}
-  else document.execCommand('fontSize',false,'7');
- }else{
-  // Se usa la selección nativa para no extraer fragmentos entre varios bloques.
-  document.execCommand('fontSize',false,'7');
-  editor.querySelectorAll('font[size="7"]').forEach(node=>{
-   const span=document.createElement('span');span.style.fontSize=px+'px';
-   while(node.firstChild)span.append(node.firstChild);
-   node.replaceWith(span);
-  });
- }
+ const selection=window.getSelection();
+ const range=storedRange||(selection?.rangeCount?selection.getRangeAt(0):null);
+ if(!m1135SelectionInsideEditor(range,editor)||range.collapsed)return false;
+ editor.focus();
+ selection.removeAllRanges();selection.addRange(range);
+ // execCommand mantiene las etiquetas, los bloques y el historial nativo de edición.
+ if(!document.execCommand('fontSize',false,'7'))return false;
+ // Reemplazar la etiqueta temporal por un span de tamaño CSS; no tocar el resto.
+ editor.querySelectorAll('font[size="7"]').forEach(node=>{
+  const span=document.createElement('span');span.style.fontSize=px+'px';
+  while(node.firstChild)span.append(node.firstChild);
+  node.replaceWith(span);
+ });
  editor.dispatchEvent(new Event('input',{bubbles:true}));
+ return true;
 }
 function m1135EditorControls(){
  const editor=document.getElementById('chapter-editor'),title=document.getElementById('chapter-title');
- if(!editor||!activeChapter()||editor.closest('.screenplay-area'))return;
- if(title&&Number.isFinite(Number(activeChapter()?.titleLayout?.fontSize)))title.style.fontSize=Math.max(10,Math.min(72,Number(activeChapter().titleLayout.fontSize)))+'px';
- const head=document.querySelector('.m112-toolstack')||document.querySelector('.editor-toolbar');
- if(!head||head.querySelector('[data-m1135-font-size]'))return;
- const label=document.createElement('label');label.className='m1135-text-size';
- label.title=m1135T('Cambia el tamaño de la selección o del encabezado sin alterar todo el capítulo.','Change selection or heading size without changing the whole chapter.');
- label.innerHTML=`<span>${m1135T('Texto','Text')}</span><select data-m1135-font-size aria-label="${m1135T('Tamaño del texto seleccionado','Selected text size')}"><option value="">${m1135T('Tamaño…','Size…')}</option>${[10,11,12,14,16,18,20,22,24,26,28,30,32,36,40,48,60,72].map(n=>`<option value="${n}">${n} px</option>`).join('')}</select>`;
- const sel=label.querySelector('select');sel.addEventListener('mousedown',()=>{
-  // Capturar la selección al abrir el selector, antes de que pierda el foco.
-  m1135LastTitle=document.activeElement===title;const s=window.getSelection();if(!m1135LastTitle&&s?.rangeCount){m1135LastSelection=s.getRangeAt(0).cloneRange();}
- });
- sel.addEventListener('change',()=>{
-  const n=Number(sel.value);if(!n)return;
-  if(m1135LastSelection&&!m1135LastTitle){const s=window.getSelection();s.removeAllRanges();s.addRange(m1135LastSelection);}
-  m1135SetTextSize(n,m1135LastTitle);sel.value='';m1135LastSelection=null;m1135LastTitle=false;
- });
- const row=head.querySelector('.m112-tool-row')||head.querySelector('.m112-second-row')||head;
- row.append(label);
+ const size=document.getElementById('chapter-size'),chapter=activeChapter();
+ if(!editor||!chapter||!size||editor.closest('.screenplay-area'))return;
+ // Si el usuario enfoca de nuevo el texto, no aplicar después una selección vieja.
+ editor.addEventListener('focusin',()=>{m1135SizeTitle=false;});
+ if(title&&Number.isFinite(Number(chapter.titleLayout?.fontSize)))
+  title.style.fontSize=Math.max(11,Math.min(72,Number(chapter.titleLayout.fontSize)))+'px';
+ size.title=m1135T('Selecciona texto para cambiar SOLO su tamaño. Sin selección, cambia el tamaño general del capítulo.',
+  'Select text to change ONLY its size. Without a selection, change the entire chapter size.');
+ size.setAttribute('aria-label',m1135T('Tamaño de letra: selección o capítulo','Font size: selection or chapter'));
+ // El controlador original, registrado por wire(), cambia el tamaño global.
+ // Lo sustituimos SOLO aquí para aprovechar el mismo campo existente.
+ size.onchange=()=>{
+  const px=Number(size.value),ch=activeChapter();
+  if(!ch||!Number.isInteger(px)||px<11||px>32){size.value=String(ch?.layout?.size||18);return;}
+  const stored=m1135SizeChapterId===ch.id?m1135SizeRange:null;
+  const titleChosen=m1135SizeChapterId===ch.id&&m1135SizeTitle;
+  const applied=titleChosen?m1135SetTextSize(px,true):stored?m1135SetTextSize(px,false,stored):false;
+  if(!applied){
+   ch.layout=ch.layout||{font:'Georgia',size:18,leading:1.9,margin:60};
+   ch.layout.size=px;
+   document.querySelector('.editor-area')?.style.setProperty('--chapter-size',px+'px');
+   changed();
+  }
+  // Tras una edición puntual, el control vuelve a mostrar el valor general.
+  // Así nunca aparenta haber cambiado el tamaño de TODO el manuscrito.
+  if(applied)size.value=String(ch.layout?.size||18);
+  m1135SizeRange=null;m1135SizeTitle=false;m1135SizeChapterId=null;
+ };
 }
-let m1135LastSelection=null,m1135LastTitle=false;
-
 /* Los marcadores de listas sin numeración propia deben acompañar el texto
  * también si el párrafo padre es el que está alineado a la derecha. */
 function m1135BindListAlignment(){
@@ -148,7 +182,7 @@ function m1135WireBookCards(){
 const m1135PreviousRender=render;
 render=function(...args){
  const result=m1135PreviousRender(...args);
- const version=document.querySelector('.brand .m11-version');if(version)version.textContent='1.13.5 · Beta';
+ const version=document.querySelector('.brand .m11-version');if(version)version.textContent='1.13.7 · Beta';
  if(state.view==='boards')m1135BoardCapture();
  if(state.view==='manuscript'){m1135EditorControls();m1135BindListAlignment();}
  m1135WireBookCards();return result;

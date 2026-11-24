@@ -52,7 +52,7 @@ function m1134Grid(p,type){
 function m1134MetadataFields(record,type){
  const desc=m1134T('Descripción breve','Short description'),placeholder=m1134T('Una o dos líneas para la vista de tarjetas…','One or two lines for the card view…');
  const labels=m1134Labels(record).join(', ');
- return `<section class="m1134-card-fields" aria-label="${m1134T('Información de la tarjeta','Card information')}"><label>${desc}<textarea rows="2" maxlength="250" data-m1134-field="summary" placeholder="${placeholder}">${esc(record.summary||'')}</textarea></label><label>${m1134T('Etiquetas de la tarjeta','Card labels')}<input type="text" maxlength="300" data-m1134-field="tags" value="${esc(labels)}" placeholder="${m1134T('Principal, Familia, Nueva York…','Main, Family, New York…')}"><small>${m1134T('Máximo 4 etiquetas, separadas por comas.','Maximum 4 comma-separated labels.')}</small></label></section>`;
+ return `<section class="m1134-card-fields" aria-label="${m1134T('Información de la tarjeta','Card information')}"><label>${desc}<textarea rows="2" maxlength="250" data-m1134-field="summary" placeholder="${placeholder}">${esc(record.summary||'')}</textarea></label><label>${m1134T('Etiquetas · máx. 4','Labels · max. 4')}<input type="text" maxlength="300" data-m1134-field="tags" value="${esc(labels)}" placeholder="${m1134T('Principal, Familia, Nueva York…','Main, Family, New York…')}"></label></section>`;
 }
 const m1134PreviousSheet=sheetHtml;
 sheetHtml=function(p,type){

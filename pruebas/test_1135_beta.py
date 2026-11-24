@@ -1,4 +1,4 @@
-"""Pruebas de interfaz 1.13.5 con puente de escritorio simulado.
+"""Pruebas de interfaz 1.13.7 con puente de escritorio simulado.
 No sustituyen las pruebas Rust/SQLite/WebView2 en Windows.
 """
 from pathlib import Path
@@ -80,16 +80,19 @@ with sync_playwright() as pw:
  assert len(page.evaluate('activeBoard().strokes'))==1
  # Editor: cambio puntual de encabezado y jerarquía visual.
  page.evaluate("state.view='manuscript';render()")
- assert page.locator('[data-m1135-font-size]').count()==1
+ assert page.locator('#chapter-size').count()==1
+ assert page.locator('[data-m1135-font-size]').count()==0
  page.evaluate('''() => {const el=document.querySelector('#chapter-editor h2');const range=document.createRange();range.selectNodeContents(el);const s=window.getSelection();s.removeAllRanges();s.addRange(range)}''')
- page.locator('[data-m1135-font-size]').select_option('32')
+ page.locator('#chapter-size').fill('32')
+ page.locator('#chapter-size').press('Tab')
  assert 'font-size: 32px' in page.locator('#chapter-editor').inner_html()
  assert '32px' in page.evaluate("getComputedStyle(document.querySelector('#chapter-editor h2 span')).fontSize")
  # Tamaño independiente del título del capítulo (no cambia los párrafos).
  page.locator('#chapter-title').focus()
- page.locator('[data-m1135-font-size]').select_option('40')
- assert page.evaluate('activeChapter().titleLayout.fontSize')==40
- assert page.locator('#chapter-title').evaluate('e=>getComputedStyle(e).fontSize')=='40px'
+ page.locator('#chapter-size').fill('28')
+ page.locator('#chapter-size').press('Tab')
+ assert page.evaluate('activeChapter().titleLayout.fontSize')==28
+ assert page.locator('#chapter-title').evaluate('e=>getComputedStyle(e).fontSize')=='28px'
  # Niveles anidados y alineación a la derecha.
  page.evaluate('''() => {const ed=document.getElementById('chapter-editor');ed.innerHTML='<ol><li>Uno<ol><li>Uno uno<ol><li style="text-align:right">Uno uno uno</li></ol></li></ol></li></ol>';}''')
  assert page.locator('#chapter-editor ol').count()==3
@@ -105,4 +108,4 @@ with sync_playwright() as pw:
  assert not page.evaluate('state.projects[0]._margenLazy')
  assert not errors,errors
  browser.close()
-print('PASS 1.13.5: filtros, etiquetas, fondos visibles, objeto visible, pincel+undo/redo, editor y libro a un clic')
+print('PASS 1.13.7: filtros, etiquetas, fondos visibles, objeto visible, pincel+undo/redo, editor y libro a un clic')

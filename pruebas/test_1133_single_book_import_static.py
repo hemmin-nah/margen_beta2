@@ -5,8 +5,8 @@ root=Path(__file__).resolve().parents[1]
 pkg=json.loads((root/'package.json').read_text('utf-8'))
 conf=json.loads((root/'src-tauri/tauri.conf.json').read_text('utf-8'))
 cargo=(root/'src-tauri/Cargo.toml').read_text('utf-8')
-assert pkg['version']==conf['version']=='1.13.5'
-assert 'version = "1.13.5"' in cargo
+assert pkg['version']==conf['version']=='1.13.7'
+assert 'version = "1.13.7"' in cargo
 index=(root/'frontend/index.html').read_text('utf-8')
 for path in ['margen-book-import-model.js','margen-1133.js','margen-1133.css']:
     assert path in index and (root/'frontend/assets'/path).is_file(),path
@@ -18,6 +18,6 @@ assert 'm1133PrevOnAction' in js and "==='restore'" in js
 assert '1.13.3 · Beta' in js
 assert (root/'src-tauri/src/lib.rs').read_text('utf-8').count('single_book_export_payload') >= 2
 wf=(root/'.github/workflows/build-windows.yml').read_text('utf-8')
-for val in ['test_1133_book_import_model.cjs','test_1133_single_book_import_static.py','MARGEN-1.13.5-Windows-x64']:
+for val in ['test_1133_book_import_model.cjs','test_1133_single_book_import_static.py','MARGEN-1.13.7-Windows-x64']:
     assert val in wf,val
 print('PASS MARGEN 1.13.3 static import and build checks')

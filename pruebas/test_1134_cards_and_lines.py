@@ -60,7 +60,7 @@ with sync_playwright() as pw:
     page.locator('[data-action="m1134-overview"]').click()
     assert page.locator('.m1134-card').count()==1
     page.evaluate("state.view='boards';render()")
-    # El fondo 1.13.5 se pinta en CSS, no con un SVG gigante oculto.
+    # El fondo 1.13.7 se pinta en CSS, no con un SVG gigante oculto.
     for kind in ['ruled','wide','notebook']:
         page.evaluate("kind=>{activeBoard().background=kind;document.getElementById('board-world').className='board-world bg-'+kind;m1134DrawPaper()}",kind)
         assert 'gradient' in page.locator('#board-world').evaluate('e=>getComputedStyle(e).backgroundImage')

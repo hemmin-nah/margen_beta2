@@ -1,10 +1,28 @@
+# MARGEN 1.13.7 Beta — acabado editorial de la interfaz
+
+**Base:** MARGEN 1.13.6 Beta. Esta versión introduce únicamente cambios visuales: cabecera, navegación, tarjetas de libros, buscador, botones, fichas y superficies de edición. Se siguen usando las variables de los temas de MARGEN. No se modifica Rust, SQLite, el modelo de libros ni los formatos JSON.
+
+- Todo el acabado se encuentra en `frontend/assets/margen-1137.css`, cargado al final de las hojas de estilo.
+- Se conserva el tamaño contextual del control único del editor y las fichas compactas de la 1.13.6.
+- Se mejora el contraste de las portadas sin imagen en tema oscuro y la agrupación visual de acciones de biblioteca.
+- Se añade `pruebas/test_1137_static.py` al workflow. Las pruebas visuales con Chromium (`pruebas/test_1137_visual.py`) son locales.
+- El proyecto se entrega sin `dist/`: el workflow la regenera. No incluye `.exe` ya compilado.
+
+**Instalación:** exporta primero un JSON externo de tus libros. Sube el contenido interior del ZIP a GitHub, incluida `.github/workflows/build-windows.yml`, y ejecuta **Actions → Compilar MARGEN para Windows → Run workflow**. Si finaliza correctamente, descarga `MARGEN-1.13.7-Windows-x64`.
+
+## Historial anterior (1.13.6 y previas)
+
+# MARGEN 1.13.6 Beta — ajuste de tamaño y fichas compactas
+
+Base: 1.13.5. El campo original «Tamaño» ahora aplica formato al texto seleccionado sin cambiar el resto del capítulo; sin selección conserva su función general. Se elimina el selector adicional de la 1.13.5. Descripción breve y etiquetas ocupan menos alto en fichas de personaje y escenario.
+
 # MARGEN 1.13.5 Beta — Proyecto Windows / Tauri
 
 **Base: MARGEN 1.13.4 con fichas en tarjetas e importación individual.** La 1.13.5 corrige el fondo de líneas y añade ajustes del editor, filtro de carpetas y apertura a un clic. No incluye instalador `.exe`.
 
-## Novedad de la versión 1.13.5
+## Histórico: novedades de la versión 1.13.5
 
-- **Editor:** control independiente de tamaño en píxeles de la selección, del bloque de texto o del título editorial del capítulo, sin modificar la tipografía general de todos los párrafos; listas numeradas con niveles jerárquicos y ajuste de viñetas cuando el contenido se alinea a la derecha.
+- **Editor (histórico):** la versión 1.13.5 introdujo un selector adicional (retirado en 1.13.6) para el tamaño individual; listas numeradas con niveles jerárquicos y ajuste de viñetas cuando el contenido se alinea a la derecha.
 - **Pizarra:** los tres fondos de líneas se dibujan con gradientes CSS sobre el lienzo (se retira el enorme SVG oculto de 1.13.4). Crear notas, textos e imágenes utiliza el centro visible del lienzo grande. Los trazos de pincel guardan su estado anterior y desdibujan el foco de notas al comenzar, para que Ctrl+Z actúe sobre el dibujo; el cuentagotas actualiza el color del primer trazo.
 - **Fichas de personaje y escenario:** máximo cuatro etiquetas por tarjeta; encima de la cuadrícula aparecen pestañas de las carpetas existentes, «Todas las fichas» y «Sin carpeta», que filtran la vista sin alterar la organización. Botones de la barra izquierda con posiciones estables.
 - **Biblioteca:** clic único sobre la portada/tarjeta, incluso para libros de carga diferida.
@@ -52,7 +70,7 @@ Se han retirado las versiones sobrescritas de selección rectangular, controles 
 2. Extrae el ZIP y sube **el contenido interior de la carpeta** a GitHub, incluidas `.github`, `frontend`, `src-tauri`, `pruebas`, `herramientas_frontend.py`, `herramientas_lexicas.py` y `package.json`.
 3. **Muy importante:** si reutilizas un repositorio con archivos antiguos, al subir nuevos ficheros GitHub NO borra los anteriores. Elimina del repositorio los archivos obsoletos antes de dar la limpieza por terminada. Consulta `INFORME_LIMPIEZA_1132.md`.
 4. En GitHub, abre **Actions → Compilar MARGEN para Windows → Run workflow**. No pulses "Re-run" de una ejecución antigua, porque usa el commit original.
-5. Si todo acaba en verde, descarga **MARGEN-1.13.4-Windows-x64** y utiliza el instalador `.exe` dentro del artefacto.
+5. Si todo acaba en verde, descarga **MARGEN-1.13.6-Windows-x64** y utiliza el instalador `.exe` dentro del artefacto.
 
 El workflow reconstruye `dist/` antes de ejecutar las pruebas Rust. También se ha configurado `beforeBuildCommand` para que un build Tauri directo lo regenere.
 
@@ -77,8 +95,10 @@ python pruebas/test_1134_static.py
 python pruebas/test_1134_cards_and_lines.py  # solo en local con Playwright y Chromium
 python pruebas/test_1135_static.py
 python pruebas/test_1135_beta.py  # solo en local con Playwright y Chromium
+python pruebas/test_1136_static.py
+python pruebas/test_1136_size_and_fiche.py  # solo en local con Playwright y Chromium
 ```
 
 El paso `python herramientas_lexicas.py --build` requiere acceso a las fuentes oficiales de los diccionarios y la verificación de licencias sigue activa.
 
-La actualización **cambia la versión a 1.13.5**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.
+La actualización **cambia la versión a 1.13.6**, pero conserva el identificador `com.margen.escritorio`, el modelo SQLite y los documentos de los usuarios. Los diccionarios se generan en la build y no estaban incluidos en el ZIP original. No se ha compilado un instalador Windows aquí; hay que verificarlo en GitHub Actions.

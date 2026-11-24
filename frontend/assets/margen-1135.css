@@ -37,7 +37,4 @@
 #chapter-editor ul>li[style*="right"],#chapter-editor ul>li.m1135-right-list{list-style-position:inside;text-align:right}
 #chapter-editor ul>li[style*="right"]::marker{text-align:right}
 #chapter-editor li.m112-centered-list{text-align:center;list-style-position:inside}
-.m1135-text-size{display:inline-flex;align-items:center;gap:5px;font:11px 'Segoe UI',system-ui,sans-serif;color:var(--muted);white-space:nowrap;margin:0 4px}
-.m1135-text-size select{background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:5px 7px;max-width:105px;font:12px 'Segoe UI',system-ui,sans-serif;color:var(--ink)}
-.m1135-text-size select:focus{border-color:var(--accent)}
 @media(max-width:700px){.m1134-folder-strip{padding-inline:15px}.m1134-folder-chip{padding:7px 12px;min-width:0}}

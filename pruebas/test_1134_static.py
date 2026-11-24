@@ -4,7 +4,7 @@ import json
 root=Path(__file__).resolve().parents[1]
 pkg=json.loads((root/'package.json').read_text('utf8'))
 conf=json.loads((root/'src-tauri/tauri.conf.json').read_text('utf8'))
-assert pkg['version']==conf['version'] in ('1.13.4','1.13.5')
+assert pkg['version']==conf['version'] in ('1.13.4','1.13.5','1.13.6','1.13.7')
 index=(root/'frontend/index.html').read_text('utf8')
 assert index.index('margen-1133.js')<index.index('margen-1134.js')
 for f in ['margen-1134.js','margen-1134.css']:
@@ -18,5 +18,5 @@ assert 'm1134PreviousCrisp=m162CrispLines' in src
 css=(root/'frontend/assets/margen-1134.css').read_text('utf8')
 assert '.m1134-grid' in css and '.board-world.bg-wide' in css and '.board-world.bg-notebook' in css
 wf=(root/'.github/workflows/build-windows.yml').read_text('utf8')
-assert 'MARGEN-1.13.'+('4' if pkg['version']=='1.13.4' else '5')+'-Windows-x64' in wf and 'test_1134_static.py' in wf
+assert 'MARGEN-'+pkg['version']+'-Windows-x64' in wf and 'test_1134_static.py' in wf
 print('PASS MARGEN 1.13.4: módulos, HTML, versión, estilos, flujo Windows')

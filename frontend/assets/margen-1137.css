@@ -1,0 +1,101 @@
+/* MARGEN 1.13.7 · Acabado visual editorial.
+   Capa estrictamente de presentación: sin sustituir los temas ni cambiar
+   el tamaño/colores de los documentos guardados por el escritor. */
+:root{
+  --m137-shadow-card:0 3px 11px rgba(33,37,29,.045),0 18px 40px rgba(33,37,29,.045);
+  --m137-shadow-hover:0 9px 22px rgba(33,37,29,.065),0 22px 43px rgba(33,37,29,.07);
+  --m137-line-soft:color-mix(in srgb,var(--line) 70%,transparent);
+}
+html[data-theme="dark"]{
+  --m137-shadow-card:0 3px 12px rgba(0,0,0,.13),0 18px 38px rgba(0,0,0,.1);
+  --m137-shadow-hover:0 12px 25px rgba(0,0,0,.17),0 24px 45px rgba(0,0,0,.13);
+}
+/* Cabecera: jerarquía más clara, superficies menos planas. */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--m137-line-soft);
+  box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 3%,transparent);
+}
+.brand{letter-spacing:.115em;font-size:20px;gap:11px}
+.brand-mark{border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 18%,transparent)}
+.topnav{gap:4px;min-width:0}
+.toplink{border-radius:10px;font-size:12.5px;transition:background .15s,color .15s}
+.toplink.active{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 14%,transparent)}
+.header-right{gap:4px}
+.header-right .status{font-size:11px;letter-spacing:.01em}
+.iconbtn{border-radius:10px;transition:background .15s,color .15s,border-color .15s}
+.iconbtn:hover{border-color:var(--m137-line-soft)}
+/* Navegación lateral: separar secciones sin cargar de líneas ni colores. */
+.sidebar{border-right:1px solid var(--m137-line-soft)}
+.project-current{border-bottom:1px solid var(--m137-line-soft)}
+.sidebar .project-current-name{font-weight:700;letter-spacing:.005em}
+.sidebar-scroll .sidebaritem{transition:background .14s,color .14s}
+.sidebar-scroll .sidebaritem.active{box-shadow:inset 3px 0 0 var(--accent-strong)}
+.sidebar .tree-heading,.sidebar .tree-category{letter-spacing:.005em}
+.sidebar .tree-section{border-color:var(--m137-line-soft)}
+.sidebar-bottom{border-top-color:var(--m137-line-soft)}
+/* Escala tipográfica de las páginas de trabajo. El cuerpo de la novela NO se modifica. */
+.workspace-head{padding-top:29px;padding-bottom:17px;gap:18px}
+.workspace-head .eyebrow{letter-spacing:.17em;font-weight:750}
+.workspace-head h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.033em;font-size:clamp(29px,2.45vw,36px);line-height:1.17}
+.section-title{letter-spacing:-.022em}
+.btn{border-radius:10px;transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}
+.btn:not(:disabled):hover{box-shadow:0 2px 7px color-mix(in srgb,var(--ink) 7%,transparent)}
+.btn.primary{box-shadow:0 3px 9px color-mix(in srgb,var(--accent-strong) 19%,transparent)}
+.btn.primary:hover{filter:none;background:color-mix(in srgb,var(--accent-strong) 89%,var(--ink))}
+/* Biblioteca: cubiertas como objetos editoriales, con fichas discretas. */
+.workspace:has(.projects-grid) .main-scroll{padding-top:6px}
+.projects-grid{grid-template-columns:repeat(auto-fill,minmax(175px,214px));gap:26px 24px;align-content:start;margin-top:22px;padding:0 0 25px}
+.project-card{border-radius:15px;border:1px solid var(--m137-line-soft);background:var(--surface);box-shadow:var(--m137-shadow-card);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.project-card:hover,.project-card:focus-within{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));box-shadow:var(--m137-shadow-hover)}
+.project-card:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.project-card-art{background:var(--surface2);border-bottom:1px solid var(--m137-line-soft)}
+.project-card:not(.new) .project-card-art:after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 4%,transparent);pointer-events:none}
+.project-card-body{padding:15px 15px 17px;min-height:96px}
+.project-card h3{font:400 19px/1.2 Georgia,'Times New Roman',serif;letter-spacing:-.019em;margin:0 0 7px;overflow-wrap:anywhere}
+.project-card p{font-size:11.5px;line-height:1.48;margin:0 0 10px;max-height:3em;overflow:hidden}
+.project-card-meta{font-size:10.5px;line-height:1.45;color:var(--muted);gap:5px;row-gap:3px}
+.project-card.new{border-style:dashed;box-shadow:none;background:color-mix(in srgb,var(--surface2) 65%,var(--surface))}
+.project-card.new:hover{box-shadow:var(--m137-shadow-card);border-color:var(--accent)}
+.project-card.new .project-card-art{background:transparent}
+.project-card.new .project-card-art svg{width:40px;height:40px;opacity:.65}
+.project-card.new .project-card-body h3{font-size:18px}
+.cover-edit{border-radius:9px;font-weight:650;box-shadow:0 3px 12px #0002}
+/* Cabecera de biblioteca, buscador y elementos pendientes de revisar. */
+.m165-library-actions{gap:9px}
+.m165-library-tools{margin:13px 0 18px;gap:16px}
+.m165-library-search{max-width:500px;border-radius:12px;min-height:44px;background:var(--surface);box-shadow:0 2px 9px color-mix(in srgb,var(--ink) 3%,transparent);transition:border-color .15s,box-shadow .15s}
+.m165-library-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.m165-library-search input{font-size:12.5px}
+.m165-library-sort select{border-radius:10px;min-height:40px}
+.m165-library-review{border-radius:13px;margin-bottom:16px;border-color:var(--m137-line-soft);background:color-mix(in srgb,var(--surface) 80%,var(--surface2))}
+.m165-library-review[open]{background:var(--surface)}
+/* Tarjetas de personajes y escenarios: sobrias y alineadas con la biblioteca. */
+.m1134-card{border-color:var(--m137-line-soft);border-radius:16px;box-shadow:var(--m137-shadow-card)}
+.m1134-card:hover{transform:translateY(-2px);box-shadow:var(--m137-shadow-hover)}
+.m1134-card-title{border-bottom-color:var(--m137-line-soft);letter-spacing:-.032em}
+.m1134-photo{border-radius:10px;border-color:var(--m137-line-soft)}
+.m1134-pill{border:1px solid color-mix(in srgb,var(--accent) 13%,transparent);font-family:'Segoe UI',sans-serif;font-size:11px}
+.m1134-folder-chip{border-color:var(--m137-line-soft);transition:background .15s,border-color .15s,color .15s}
+.m1134-card-fields{border-color:var(--m137-line-soft)}
+/* Formularios, paneles de lectura y editor: pulido de superficies, no de documentos. */
+.editor-toolbar,.boardbar{border-color:var(--m137-line-soft)}
+.editor-toolbar{box-shadow:0 3px 13px color-mix(in srgb,var(--ink) 4%,transparent)}
+.editor-paper{box-shadow:0 4px 16px color-mix(in srgb,var(--ink) 4%,transparent),0 24px 50px color-mix(in srgb,var(--ink) 5%,transparent)}
+.tool-btn{transition:background .14s,color .14s}
+.empty-state{line-height:1.7}
+.empty-state h2{letter-spacing:-.025em}
+/* Accesibilidad: no ocultar acciones a quien usa teclado o pantalla táctil. */
+@media(hover:none){.project-card .cover-edit{opacity:1}}
+@media(max-width:900px){.workspace-head{padding-inline:22px}.workspace:has(.projects-grid) .main-scroll{padding-inline:22px}.projects-grid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:18px}.m165-library-tools{flex-wrap:wrap}}
+@media(max-width:700px){.m165-library-search{max-width:none;flex:1 1 100%}.projects-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr))}}
+@media(prefers-reduced-motion:reduce){.project-card,.m1134-card,.btn,.iconbtn,.toplink,.sidebar-scroll .sidebaritem{transition:none!important}.project-card:hover,.m1134-card:hover{transform:none}}
+/* Las acciones de la biblioteca forman un solo conjunto, no dos extremos de la cabecera. */
+.workspace-head:has(.m165-library-actions){justify-content:flex-start;flex-wrap:wrap}
+.workspace-head .m165-library-actions{margin-left:auto;gap:8px}
+.workspace-head:has(.m165-library-actions) .m1133-library-import{margin-left:0}
+/* La portada sin imagen debe leerse también en Medianoche/tema oscuro.
+   Conserva el fondo elegido para el libro y solo corrige el contraste del texto. */
+html[data-theme="dark"] .cover-placeholder{color:var(--accent-strong)!important}
+html[data-theme="dark"] .cover-placeholder svg{opacity:.84}
+@media(max-width:1190px){.workspace-head:has(.m165-library-actions) .m165-library-actions{margin-left:0}}
